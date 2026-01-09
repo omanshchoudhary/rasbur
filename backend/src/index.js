@@ -11,14 +11,32 @@ app.get('/health', (req,res) => {
 })
 
 app.post('/decode', (req,res) => {
-    console.log(req.body)
     const input = req.body?.input;
+
     if (!input) {
         return res.status(400).json({error: 'Input is required'})
     }
+    const results =[]
+    
+    for(const decoder of getDecoders()){
+        const confidence = decoder.confidence(input)
+        if(confidence>0){
+            const output = decoder.decode(input)
+
+            if(output){
+                results.push({
+                    type: decoder.name,
+                    confidence,
+                    output,
+                    explaination: decoder.explain()
+                })
+            }
+        }
+        
+    }
     res.json({
-        received: input,
-        message: 'Decoder pipeline coming soon'
+        input,
+        results
     })
 })
 
