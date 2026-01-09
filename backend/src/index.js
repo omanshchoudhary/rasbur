@@ -1,4 +1,6 @@
 import express from "express"
+import { getDecoders } from "./registry/decoderRegistry.js";
+
 const app = express()
 const port = 3000
 
