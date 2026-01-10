@@ -20,6 +20,7 @@ app.post('/decode', (req,res) => {
     const steps = decodePipeline(input)
     res.json({
         input,
+        layers: steps.length,
         steps
     })
 })

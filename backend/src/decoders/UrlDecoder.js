@@ -28,6 +28,7 @@ export default class UrlDecoder extends Decoder {
     }
 
     explain() {
-        return "URL encoding replaces unsafe characters using % followed by hexadecimal values.";
+        return "URL encoding replaces reserved or unsafe characters using % followed by hexadecimal values.";
     }
+
 }

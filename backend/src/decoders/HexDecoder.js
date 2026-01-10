@@ -19,7 +19,7 @@ export default class HexDecoder extends Decoder {
             const cleanInput = input.replace(/\s+/g, '');
             let result = '';
 
-            for (let i = 0; i < cleanInput.length; i+=2) {
+            for (let i = 0; i < cleanInput.length; i += 2) {
                 const byte = parseInt(cleanInput.slice(i, i + 2), 16)
                 if (isNaN(byte)) return null;
                 result += String.fromCharCode(byte)
@@ -32,7 +32,9 @@ export default class HexDecoder extends Decoder {
         }
     }
 
+
     explain() {
-        return "Hexadecimal encoding represents binary data using base-16 values (0–9, A–F).";
+        return "Hexadecimal encoding represents raw bytes using base-16 values (0–9, A–F).";
     }
+
 }

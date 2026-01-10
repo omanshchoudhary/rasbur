@@ -21,6 +21,7 @@ export function decodePipeline(input) {
                 bestResult = {
                     type: decoder.name,
                     confidence,
+                    input: current,
                     output,
                     explanation: decoder.explain()
                 }
