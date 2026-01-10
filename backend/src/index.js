@@ -1,5 +1,6 @@
 import express from "express"
-import { getDecoders } from "./registry/decoderRegistry.js";
+
+import { decodePipeline } from "./pipeline/decodePipeline.js";
 
 const app = express()
 const port = 3000
@@ -16,27 +17,10 @@ app.post('/decode', (req,res) => {
     if (!input) {
         return res.status(400).json({error: 'Input is required'})
     }
-    const results =[]
-    
-    for(const decoder of getDecoders()){
-        const confidence = decoder.confidence(input)
-        if(confidence>0){
-            const output = decoder.decode(input)
-
-            if(output){
-                results.push({
-                    type: decoder.name,
-                    confidence,
-                    output,
-                    explaination: decoder.explain()
-                })
-            }
-        }
-        
-    }
+    const steps = decodePipeline(input)
     res.json({
         input,
-        results
+        steps
     })
 })
 
