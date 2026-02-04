@@ -5,6 +5,7 @@ import HexDecoder from "../decoders/HexDecoder.js";
 import BinaryDecoder from "../decoders/BinaryDecoder.js";
 import ROT13Decoder from "../decoders/ROT13Decoder.js";
 import AsciiDecoder from "../decoders/AsciiDecoder.js";
+import MorseDecoder from "../decoders/MorseDecoder.js";
 
 const decoders = []
 
@@ -14,6 +15,10 @@ registerDecoder(new HexDecoder())
 registerDecoder(new BinaryDecoder())
 registerDecoder(new ROT13Decoder())
 registerDecoder(new AsciiDecoder())
+registerDecoder(new MorseDecoder())
+
+
+
 export function registerDecoder(decoder){
     if(!(decoder instanceof Decoder)){
         throw new Error("Invalid Decoder")
