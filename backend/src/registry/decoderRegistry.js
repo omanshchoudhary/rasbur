@@ -6,6 +6,7 @@ import BinaryDecoder from "../decoders/BinaryDecoder.js";
 import ROT13Decoder from "../decoders/ROT13Decoder.js";
 import AsciiDecoder from "../decoders/AsciiDecoder.js";
 import MorseDecoder from "../decoders/MorseDecoder.js";
+import Base32Decoder from "../decoders/Base32Decoder.js";
 
 const decoders = []
 
@@ -16,7 +17,7 @@ registerDecoder(new BinaryDecoder())
 registerDecoder(new ROT13Decoder())
 registerDecoder(new AsciiDecoder())
 registerDecoder(new MorseDecoder())
-
+registerDecoder(new Base32Decoder())
 
 
 export function registerDecoder(decoder){
