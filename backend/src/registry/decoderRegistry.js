@@ -4,6 +4,7 @@ import UrlDecoder from "../decoders/UrlDecoder.js";
 import HexDecoder from "../decoders/HexDecoder.js";
 import BinaryDecoder from "../decoders/BinaryDecoder.js";
 import ROT13Decoder from "../decoders/ROT13Decoder.js";
+import AsciiDecoder from "../decoders/AsciiDecoder.js";
 
 const decoders = []
 
@@ -12,7 +13,7 @@ registerDecoder(new UrlDecoder())
 registerDecoder(new HexDecoder())
 registerDecoder(new BinaryDecoder())
 registerDecoder(new ROT13Decoder())
-
+registerDecoder(new AsciiDecoder())
 export function registerDecoder(decoder){
     if(!(decoder instanceof Decoder)){
         throw new Error("Invalid Decoder")
