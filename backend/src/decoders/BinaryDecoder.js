@@ -4,7 +4,7 @@ export default class BinaryDecoder extends Decoder {
     name = "Binary"
 
     confidence(input) {
-        if (!input) return 0
+        if (!input) return 0;
 
         const cleanInput = input.trim()
         const binaryRegex = /^([01]{8})(\s+[01]{8})+$/;
