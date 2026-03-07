@@ -24,3 +24,6 @@ yarn-error.log*
 .vscode/
 .idea/
 roadmap.md
+
+# SOP
+PRD.md
