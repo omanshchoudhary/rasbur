@@ -1,1 +1,2 @@
-export const hello = 'shared';
+// Barrel File 
+export * from "./types/index.js";
