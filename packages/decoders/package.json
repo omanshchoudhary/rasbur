@@ -1,11 +1,17 @@
 {
-  "name": "@rasbur/decoders",
-  "version": "0.0.0",
-  "private": true,
-  "type": "module",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
-  "dependencies": {
-    "@rasbur/shared": "*"
-  }
+    "name": "@rasbur/decoders",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "main": "./src/index.ts",
+    "types": "./src/index.ts",
+    "scripts": {
+        "build": "tsc"
+    },
+    "dependencies": {
+        "@rasbur/shared": "*"
+    },
+    "devDependencies": {
+        "@types/node": "^20.0.0"
+    }
 }
