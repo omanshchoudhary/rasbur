@@ -5,7 +5,7 @@ export class HexDecoder extends Decoder {
 
     confidence(input: string): number {
         if (!input) return 0;
-
+        // Allows multiple format by cleaning them into proper hex format
         const cleanInput = input.replace(/0x/gi, '').replace(/[\s:\-,]/g, '');
 
         if (!/^[0-9A-Fa-f]+$/.test(cleanInput)) return 0;
@@ -32,7 +32,7 @@ export class HexDecoder extends Decoder {
                 const byte = parseInt(cleanInput.substring(i, i + 2), 16);
                 result += String.fromCharCode(byte);
             }
-
+            // If decoded output contains non-printable control characters, reject it.
             if (/[\x00-\x08\x0E-\x1F]/.test(result)) return null;
 
             return result;

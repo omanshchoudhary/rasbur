@@ -7,7 +7,7 @@ export class Base64Decoder extends Decoder {
         if (!input) return 0;
 
         const cleanInput = input.replace(/\s+/g, '');
-
+        // Base64 strings must be divisible by 4 characters.
         if (cleanInput.length % 4 !== 0) return 0;
 
         const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/;

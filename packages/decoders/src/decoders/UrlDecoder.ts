@@ -7,10 +7,11 @@ export class UrlDecoder extends Decoder {
         if (!input) return 0;
 
         const percentPattern = /%[0-9A-Fa-f]{2}/g;
+        // Count matches
         const matches = input.match(percentPattern);
 
         if (!matches || matches.length === 0) return 0;
-
+        // How much of the string is encoded
         const ratio = (matches.length * 3) / input.length;
 
         if (ratio > 0.3) return 0.95;
