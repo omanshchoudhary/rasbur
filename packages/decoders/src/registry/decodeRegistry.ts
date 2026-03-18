@@ -1,4 +1,4 @@
-import { Decoder } from '@rasbur/shared';
+import { Decoder } from '../base/Decoder.js';
 
 class DecodeRegistry {
     private decoders: Decoder[] = [];

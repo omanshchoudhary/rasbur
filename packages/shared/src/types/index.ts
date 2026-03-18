@@ -1,11 +1,4 @@
-// Decoder Types
-
-export interface Decoder {
-    name: string;
-    confidence(input: string): number;
-    decode(input: string): string | null;
-    explain(): string;
-}
+// Decode Result Types
 
 export interface DecodeStep {
     decoderName: string;

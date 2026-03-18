@@ -14,9 +14,9 @@ export class HexDecoder extends Decoder {
 
         if (cleanInput.length < 2) return 0;
 
-        if (/[\s:\-]/.test(input)) return 0.9;
-
         if (/0x/i.test(input)) return 0.95;
+
+        if (/[\s:\-]/.test(input)) return 0.9;
 
         return 0.6;
     }

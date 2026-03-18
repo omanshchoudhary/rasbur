@@ -1,4 +1,5 @@
-import { Decoder, DecodeResult, DecodeStep } from '@rasbur/shared';
+import { Decoder } from '../base/Decoder.js';
+import { DecodeResult, DecodeStep } from '@rasbur/shared';
 import { decodeRegistry } from '../registry/decodeRegistry.js';
 
 interface DecodeOptions {
