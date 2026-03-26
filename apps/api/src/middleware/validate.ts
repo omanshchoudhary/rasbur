@@ -1,10 +1,11 @@
 import type { Request, Response, NextFunction } from 'express';
-import { ZodSchema, ZodError } from 'zod';
+import { type ZodType, ZodError } from 'zod';
+import type { ParamsDictionary, Query } from 'express-serve-static-core';
 
 type ValidateBody = {
-    body?: ZodSchema;
-    query?: ZodSchema;
-    params?: ZodSchema;
+    body?: ZodType;
+    query?: ZodType;
+    params?: ZodType;
 };
 
 export const validate = (schemas: ValidateBody) => {
@@ -14,10 +15,10 @@ export const validate = (schemas: ValidateBody) => {
                 req.body = schemas.body.parse(req.body);
             }
             if (schemas.query) {
-                req.query = schemas.query.parse(req.query);
+                req.query = schemas.query.parse(req.query) as Query;
             }
             if (schemas.params) {
-                req.params = schemas.params.parse(req.params);
+                req.params = schemas.params.parse(req.params) as ParamsDictionary;
             }
             next();
         } catch (error) {

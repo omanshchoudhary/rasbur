@@ -19,3 +19,4 @@ export * from './decoders/UnicodeEscapeDecoder.js';
 export * from './decoders/CaesarCipherDecoder.js';
 export * from './decoders/QuotedPrintableDecoder.js';
 export * from './decoders/JsonStringifyDecoder.js';
+export * from './registerDecoders.js'

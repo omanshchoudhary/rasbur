@@ -26,9 +26,21 @@ export class Base85Decoder extends Decoder {
 
         if (validCount !== cleanInput.length) return 0;
 
-        if (hasDelimiters) return 0.9;
-        if (cleanInput.length >= 5) return 0.7;
-        return 0.4;
+        if (hasDelimiters) return 0.95;
+
+        // Raw Ascii85 without delimiters should usually look encoded,
+        // not like a normal plain-English word.
+        const hasSymbols = /[!#$%&()*+\-;<=>?@^_`{|}~]/.test(cleanInput);
+        const hasDigit = /\d/.test(cleanInput);
+
+        if (!hasSymbols && !hasDigit) {
+            return 0;
+        }
+
+        if (cleanInput.length < 5) return 0;
+        if (cleanInput.length % 5 === 0) return 0.75;
+
+        return 0.45;
     }
 
     decode(input: string): string | null {
@@ -79,9 +91,7 @@ export class Base85Decoder extends Decoder {
                 ];
 
                 // For incomplete last group, only keep (originalGroupLen - 1) bytes
-                const bytesToKeep = isLastGroup && originalGroupLen < 5
-                    ? originalGroupLen - 1
-                    : 4;
+                const bytesToKeep = isLastGroup && originalGroupLen < 5 ? originalGroupLen - 1 : 4;
 
                 for (let b = 0; b < bytesToKeep; b++) {
                     result.push(bytes[b]!);

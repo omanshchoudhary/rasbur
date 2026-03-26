@@ -8,11 +8,11 @@ export const connectDB = async (): Promise<void> => {
         logger.info('MongoDB connected');
     } catch (error) {
         logger.error({ err: error }, 'MongoDB connection failed');
-        process.exit(1);
+        throw error;
     }
 
     mongoose.connection.on('error', (err) => {
-        logger.error('MongoDB runtime error:', err);
+        logger.error({ err }, 'MongoDB runtime error');
     });
 
     mongoose.connection.on('disconnected', () => {
