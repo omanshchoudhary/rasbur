@@ -1,7 +1,6 @@
 import { Decoder } from '../base/Decoder.js';
-import { DecodeResult, DecodeStep, DecodeOptions} from '@rasbur/shared';
+import { DecodeResult, DecodeStep, DecodeOptions } from '@rasbur/shared';
 import { decodeRegistry } from '../registry/decodeRegistry.js';
-
 
 export class DecodePipeline {
     private maxDepth = 5;
@@ -19,13 +18,22 @@ export class DecodePipeline {
             let bestDecoder: Decoder | null = null;
             let bestConfidence = 0;
 
-            // Finding the decoder of best confidence
+            if (options.forceDecoder) {
+                const forcedDecoder = decodeRegistry.getByName(options.forceDecoder);
+                if (!forcedDecoder) {
+                    break;
+                }
 
-            for (const decoder of decoders) {
-                const confidence = decoder.confidence(currentInput);
-                if (confidence > bestConfidence) {
-                    bestConfidence = confidence;
-                    bestDecoder = decoder;
+                bestDecoder = forcedDecoder;
+                bestConfidence = forcedDecoder.confidence(currentInput);
+            } else {
+                // Finding the decoder of best confidence
+                for (const decoder of decoders) {
+                    const confidence = decoder.confidence(currentInput);
+                    if (confidence > bestConfidence) {
+                        bestConfidence = confidence;
+                        bestDecoder = decoder;
+                    }
                 }
             }
 
