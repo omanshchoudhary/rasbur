@@ -12,6 +12,9 @@ export const decodeRequestSchema = z.object({
         .optional(),
 });
 
+export const identifyRequestSchema = z.object({
+    input: z.string().min(1, 'Input is required'),
+});
 // API Key
 export const apiKeySchema = z.object({
     name: z.string().min(1).max(50),

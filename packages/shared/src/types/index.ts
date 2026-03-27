@@ -21,6 +21,17 @@ export interface DecodeOptions {
     forceDecoder?: string;
 }
 
+// Identify Types
+export interface IdentifyMatch {
+    name: string;
+    confidence: number;
+    description: string;
+}
+
+export interface IdentifyResult {
+    input: string;
+    matches: IdentifyMatch[];
+}
 // User Types
 
 export interface User {

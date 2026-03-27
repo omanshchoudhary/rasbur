@@ -1,5 +1,5 @@
 import { Decoder } from '../base/Decoder.js';
-import { DecodeResult, DecodeStep, DecodeOptions } from '@rasbur/shared';
+import { DecodeResult, DecodeStep, DecodeOptions, IdentifyResult } from '@rasbur/shared';
 import { decodeRegistry } from '../registry/decodeRegistry.js';
 
 const STRICT_MODE_THRESHOLD = 0.7;
@@ -74,6 +74,21 @@ export class DecodePipeline {
             originalInput: input,
             steps,
             finalOutput,
+        };
+    }
+    identify(input: string): IdentifyResult {
+        const matches = decodeRegistry
+            .getAll()
+            .map((decoder) => ({
+                name: decoder.name,
+                confidence: decoder.confidence(input),
+                description: decoder.explain(),
+            }))
+            .filter((decoder) => decoder.confidence > 0)
+            .sort((a, b) => b.confidence - a.confidence);
+        return {
+            input,
+            matches,
         };
     }
 }
