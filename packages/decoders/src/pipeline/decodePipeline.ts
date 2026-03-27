@@ -2,6 +2,8 @@ import { Decoder } from '../base/Decoder.js';
 import { DecodeResult, DecodeStep, DecodeOptions } from '@rasbur/shared';
 import { decodeRegistry } from '../registry/decodeRegistry.js';
 
+const STRICT_MODE_THRESHOLD = 0.7;
+
 export class DecodePipeline {
     private maxDepth = 5;
 
@@ -38,7 +40,7 @@ export class DecodePipeline {
             }
 
             // If strict mode and confidence < 0.7, we stop
-            if (options.strictMode && bestConfidence < 0.7) {
+            if (options.strictMode && bestConfidence < STRICT_MODE_THRESHOLD) {
                 break;
             }
 
