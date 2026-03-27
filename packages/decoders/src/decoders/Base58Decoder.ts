@@ -17,8 +17,13 @@ export class Base58Decoder extends Decoder {
         for (const char of cleanInput) {
             if (!BASE58_ALPHABET.includes(char)) return 0;
         }
+
+        const looksLikeHex = /^[0-9A-Fa-f]+$/.test(cleanInput) && cleanInput.length % 2 === 0;
+        if (looksLikeHex) return 0;
+
         if (cleanInput.length >= 26 && cleanInput.length <= 35) return 0.95;
-        return 0.7;
+        if (cleanInput.length >= 10) return 0.7;
+        return 0.35;
     }
 
     decode(input: string): string | null {

@@ -32,8 +32,13 @@ export class Base85Decoder extends Decoder {
         // not like a normal plain-English word.
         const hasSymbols = /[!#$%&()*+\-;<=>?@^_`{|}~]/.test(cleanInput);
         const hasDigit = /\d/.test(cleanInput);
+        const looksLikeHex = /^[0-9A-Fa-f]+$/.test(cleanInput) && cleanInput.length % 2 === 0;
 
         if (!hasSymbols && !hasDigit) {
+            return 0;
+        }
+
+        if (looksLikeHex) {
             return 0;
         }
 

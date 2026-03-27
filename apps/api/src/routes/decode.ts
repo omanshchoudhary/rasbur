@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { decodePipeline, decodeRegistry, registerDecoders } from '@rasbur/decoders';
-import { decodeRequestSchema, identifyRequestSchema } from '@rasbur/shared';
+import { batchDecodeRequestSchema, decodeRequestSchema, identifyRequestSchema } from '@rasbur/shared';
 import { validate } from '../middleware/validate.js';
 
 export const decodeRouter = Router();
@@ -25,4 +25,14 @@ decodeRouter.post('/identify', validate({ body: identifyRequestSchema }), (req, 
     registerDecoders();
     const result = decodePipeline.identify(req.body.input);
     res.status(200).json(result);
+});
+decodeRouter.post('/decode/batch', validate({ body: batchDecodeRequestSchema }), (req, res) => {
+    registerDecoders();
+
+    const items = req.body.inputs.map((input: string) => ({
+        input,
+        result: decodePipeline.decode(input),
+    }));
+
+    res.status(200).json({ items });
 });

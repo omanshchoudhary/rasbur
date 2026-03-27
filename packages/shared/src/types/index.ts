@@ -14,6 +14,15 @@ export interface DecodeResult {
     finalOutput: string;
 }
 
+export interface BatchDecodeItem {
+    input: string;
+    result: DecodeResult;
+}
+
+export interface BatchDecodeResult {
+    items: BatchDecodeItem[];
+}
+
 // Decoding Options
 export interface DecodeOptions {
     maxDepth?: number;

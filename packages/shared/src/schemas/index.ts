@@ -15,6 +15,15 @@ export const decodeRequestSchema = z.object({
 export const identifyRequestSchema = z.object({
     input: z.string().min(1, 'Input is required'),
 });
+
+export const batchDecodeRequestSchema = z.object({
+    inputs: z
+        .array(z.string().min(1, 'Input is required'))
+        .min(1, 'At least one input is required')
+        .max(50, 'A maximum of 50 inputs is allowed'),
+});
+
+
 // API Key
 export const apiKeySchema = z.object({
     name: z.string().min(1).max(50),
