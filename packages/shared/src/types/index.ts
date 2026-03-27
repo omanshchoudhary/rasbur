@@ -14,6 +14,13 @@ export interface DecodeResult {
     finalOutput: string;
 }
 
+// Decoding Options
+export interface DecodeOptions {
+    maxDepth?: number;
+    strictMode?: boolean;
+    forceDecoder?: string;
+}
+
 // User Types
 
 export interface User {

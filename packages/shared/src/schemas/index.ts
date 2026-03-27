@@ -5,7 +5,7 @@ export const decodeRequestSchema = z.object({
     input: z.string().min(1, 'Input is required'),
     options: z
         .object({
-            maxDepth: z.number().min(1).max(10).optional(),
+            maxDepth: z.number().int().min(1).max(10).optional(),
             strictMode: z.boolean().optional(),
             forceDecoder: z.string().optional(),
         })

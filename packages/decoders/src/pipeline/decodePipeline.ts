@@ -1,12 +1,7 @@
 import { Decoder } from '../base/Decoder.js';
-import { DecodeResult, DecodeStep } from '@rasbur/shared';
+import { DecodeResult, DecodeStep, DecodeOptions} from '@rasbur/shared';
 import { decodeRegistry } from '../registry/decodeRegistry.js';
 
-interface DecodeOptions {
-    maxDepth?: number;
-    strictMode?: boolean;
-    forceDecoder?: string;
-}
 
 export class DecodePipeline {
     private maxDepth = 5;
@@ -15,8 +10,9 @@ export class DecodePipeline {
         const steps: DecodeStep[] = [];
         let currentInput = input;
         let depth = 0;
+        const maxDepth = options.maxDepth ?? this.maxDepth;
 
-        while (depth < (options.maxDepth || this.maxDepth)) {
+        while (depth < maxDepth) {
             // Finding the best decoder to use
 
             const decoders = decodeRegistry.getAll();
