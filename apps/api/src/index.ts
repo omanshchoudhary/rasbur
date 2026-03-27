@@ -3,13 +3,14 @@ import { app } from './app.js';
 import { env } from './config/env.js';
 import { connectDB } from './db/mongodb.js';
 import { logger } from './logger.js';
+import { checkRedisConnection } from './cache/redis.js';
 
 let isShuttingDown = false;
 
 const startServer = async (): Promise<void> => {
     try {
         await connectDB();
-
+        await checkRedisConnection();
         const server = app.listen(env.PORT, () => {
             logger.info(
                 {

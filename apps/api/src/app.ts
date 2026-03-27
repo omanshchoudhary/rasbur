@@ -5,6 +5,7 @@ import { corsMiddleware } from './middleware/cors.js';
 import { securityMiddleware } from './middleware/security.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { randomUUID } from 'node:crypto';
+import { rateLimitMiddleware } from './middleware/rateLimit.js';
 
 // Routers
 import { decodeRouter } from './routes/decode.js';
@@ -58,7 +59,7 @@ app.get('/health', (req, res) => {
         requestId: request.requestId,
     });
 });
-
+app.use('/api', rateLimitMiddleware);
 app.use('/api', decodeRouter);
 
 app.use((_req, res) => {

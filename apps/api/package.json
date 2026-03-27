@@ -11,6 +11,7 @@
   "dependencies": {
     "@rasbur/decoders": "*",
     "@rasbur/shared": "*",
+    "@upstash/redis": "^1.37.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^5.0.1",

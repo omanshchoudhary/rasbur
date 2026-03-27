@@ -8,6 +8,8 @@ const envSchema = z.object({
         .default('3001')
         .transform((val) => parseInt(val, 10)),
     NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+    UPSTASH_REDIS_REST_URL: z.string().url('Upstash Redis REST URL is required'),
+    UPSTASH_REDIS_REST_TOKEN: z.string().min(1, 'Upstash Redis REST token is required'),
 });
 
 const parsed = envSchema.safeParse(process.env);
