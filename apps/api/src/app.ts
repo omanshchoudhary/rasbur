@@ -6,6 +6,9 @@ import { securityMiddleware } from './middleware/security.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { randomUUID } from 'node:crypto';
 import { rateLimitMiddleware } from './middleware/rateLimit.js';
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './config/swagger.js';
+
 
 // Routers
 import { decodeRouter } from './routes/decode.js';
@@ -49,6 +52,21 @@ app.use((req, res, next) => {
     next();
 });
 
+/**
+ * @openapi
+ * /health:
+ *   get:
+ *     summary: Health check
+ *     tags:
+ *       - System
+ *     responses:
+ *       200:
+ *         description: API health status
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/HealthResponse'
+ */
 app.get('/health', (req, res) => {
     const request = req as RequestWithId;
     res.status(200).json({
@@ -59,6 +77,8 @@ app.get('/health', (req, res) => {
         requestId: request.requestId,
     });
 });
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 app.use('/api', rateLimitMiddleware);
 app.use('/api', decodeRouter);
 
