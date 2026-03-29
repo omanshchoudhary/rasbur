@@ -23,6 +23,11 @@ export interface BatchDecodeResult {
     items: BatchDecodeItem[];
 }
 
+export interface DecoderInfo {
+    name: string;
+    description: string;
+}
+
 // Decoding Options
 export interface DecodeOptions {
     maxDepth?: number;
