@@ -984,7 +984,8 @@ pre {
     .home-trust-item,
     .home-cta-primary,
     .home-cta-secondary,
-    .app-nav-link {
+    .app-nav-link,
+    .pipeline-toggle {
         transition: none;
     }
 }
@@ -1082,6 +1083,12 @@ pre {
     margin-bottom: 0.9rem;
 }
 
+.pipeline-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
 .pipeline-title-group {
     display: flex;
     flex-direction: column;
@@ -1113,10 +1120,42 @@ pre {
     background: #11141a;
 }
 
+.pipeline-toggle {
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.04);
+    color: #e3e8f2;
+    padding: 0.34rem 0.7rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.pipeline-toggle:hover {
+    border-color: rgba(255, 255, 255, 0.28);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.pipeline-toggle:focus-visible {
+    outline: 2px solid rgba(143, 169, 255, 0.7);
+    outline-offset: 2px;
+}
+
+.pipeline-collapsed-note {
+    margin: 0;
+    color: #9aa7bb;
+    font-size: 0.9rem;
+}
+
 @media (max-width: 900px) {
     .pipeline-top {
         flex-direction: column;
         align-items: flex-start;
+    }
+
+    .pipeline-controls {
+        width: 100%;
+        justify-content: space-between;
     }
 
     .pipeline-grid {
