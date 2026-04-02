@@ -24,24 +24,70 @@ a {
     color: inherit;
 }
 
-nav {
+.app-shell {
+    min-height: 100vh;
     display: flex;
-    gap: 1rem;
-    align-items: center;
-    padding: 1rem 1.5rem;
+    flex-direction: column;
+}
+
+.app-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     background: rgba(9, 10, 12, 0.78);
     backdrop-filter: blur(10px);
 }
 
-nav a {
-    text-decoration: none;
-    font-weight: 600;
-    color: #d4d8de;
+.app-header-inner {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
 }
 
-nav a:hover {
+.app-brand {
+    text-decoration: none;
+    font-weight: 800;
+    letter-spacing: 0.02em;
     color: #ffffff;
+}
+
+.app-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.app-nav-link {
+    text-decoration: none;
+    color: #c1c8d2;
+    border: 1px solid transparent;
+    padding: 0.42rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    transition:
+        color 160ms ease,
+        border-color 160ms ease,
+        background-color 160ms ease;
+}
+
+.app-nav-link:hover {
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.14);
+}
+
+.app-nav-link.is-active {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.14);
+}
+
+.app-content {
+    flex: 1;
 }
 
 #root {
