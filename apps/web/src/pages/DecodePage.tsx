@@ -2,6 +2,8 @@ import { useState } from 'react';
 import type { DecodeResult } from '@rasbur/shared';
 import { api } from '@/services/api.js';
 
+type RequestState = 'idle' | 'loading' | 'success' | 'error';
+
 function getConfidenceTone(confidence: number): string {
     if (confidence >= 0.8) return 'confidence-high';
     if (confidence >= 0.5) return 'confidence-mid';
@@ -11,29 +13,32 @@ function getConfidenceTone(confidence: number): string {
 export default function DecodePage() {
     const [input, setInput] = useState('');
     const [result, setResult] = useState<DecodeResult | null>(null);
-    const [error, setError] = useState<string | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
+    const [requestState, setRequestState] = useState<RequestState>('idle');
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     async function handleDecode() {
         if (!input.trim()) {
-            setError('Please enter something to decode.');
+            setRequestState('error');
+            setErrorMessage('Please enter something to decode.');
             setResult(null);
             return;
         }
 
         try {
-            setIsLoading(true);
-            setError(null);
+            setRequestState('loading');
+            setErrorMessage(null);
+            setResult(null);
 
             const decodeResult = await api.decode(input);
             setResult(decodeResult);
+            setRequestState('success');
         } catch (err) {
-            setError('Failed to decode input.');
+            setRequestState('error');
+            setErrorMessage('Failed to decode input.');
             setResult(null);
-        } finally {
-            setIsLoading(false);
         }
     }
+    const isLoading = requestState === 'loading';
 
     return (
         <main className="decode-page">
@@ -65,7 +70,7 @@ export default function DecodePage() {
                         </button>
                     </div>
 
-                    {error && <p className="decode-error">{error}</p>}
+                    {errorMessage && <p className="decode-error">{errorMessage}</p>}
                 </div>
 
                 <div className="result-panel">
@@ -82,7 +87,20 @@ export default function DecodePage() {
                         )}
                     </div>
 
-                    {!result ? (
+                    {requestState === 'loading' ? (
+                        <div className="result-empty-card result-loading-card">
+                            <p className="result-empty">
+                                Analyzing input and applying decode pipeline...
+                            </p>
+                        </div>
+                    ) : requestState === 'error' ? (
+                        <div className="result-empty-card result-error-card">
+                            <p className="result-empty">
+                                Unable to decode this input right now. Check the format and try
+                                again.
+                            </p>
+                        </div>
+                    ) : requestState === 'idle' || !result ? (
                         <div className="result-empty-card">
                             <p className="result-empty">
                                 Run a decode request to see the output and pipeline steps here.
