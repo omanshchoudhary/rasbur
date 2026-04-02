@@ -988,3 +988,120 @@ pre {
         transition: none;
     }
 }
+
+.pipeline-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.9rem;
+}
+
+.pipeline-item {
+    position: relative;
+    padding-left: 1.4rem;
+}
+
+.pipeline-item::before {
+    content: '';
+    position: absolute;
+    left: 0.34rem;
+    top: 0.1rem;
+    width: 0.62rem;
+    height: 0.62rem;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #8fa9ff, #5c7fff);
+    box-shadow: 0 0 0 3px rgba(92, 127, 255, 0.18);
+}
+
+.pipeline-connector {
+    position: absolute;
+    left: 0.6rem;
+    top: 0.95rem;
+    bottom: -0.8rem;
+    width: 1px;
+    background: linear-gradient(
+        180deg,
+        rgba(123, 150, 255, 0.38),
+        rgba(123, 150, 255, 0.08)
+    );
+}
+
+.pipeline-item:last-child .pipeline-connector {
+    display: none;
+}
+
+.pipeline-card {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 1rem;
+    background: #0b0d11;
+}
+
+.pipeline-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 0.9rem;
+}
+
+.pipeline-title-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.pipeline-title-group strong {
+    color: #ffffff;
+}
+
+.pipeline-index {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #7e8794;
+}
+
+.pipeline-grid {
+    display: grid;
+    gap: 0.9rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-bottom: 0.9rem;
+}
+
+.pipeline-block {
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    padding: 0.75rem;
+    background: #11141a;
+}
+
+@media (max-width: 900px) {
+    .pipeline-top {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .pipeline-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .pipeline-item {
+        padding-left: 1.15rem;
+    }
+
+    .pipeline-item::before {
+        left: 0.2rem;
+    }
+
+    .pipeline-connector {
+        left: 0.46rem;
+    }
+
+    .pipeline-block {
+        padding: 0.62rem;
+    }
+}

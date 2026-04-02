@@ -1,14 +1,9 @@
 import { useState } from 'react';
 import type { DecodeResult } from '@rasbur/shared';
 import { api } from '@/services/api.js';
+import DecodePipeline from '@/components/DecodePipeline.js';
 
 type RequestState = 'idle' | 'loading' | 'success' | 'error';
-
-function getConfidenceTone(confidence: number): string {
-    if (confidence >= 0.8) return 'confidence-high';
-    if (confidence >= 0.5) return 'confidence-mid';
-    return 'confidence-low';
-}
 
 export default function DecodePage() {
     const [input, setInput] = useState('');
@@ -125,53 +120,7 @@ export default function DecodePage() {
                                     <h3>Pipeline Steps</h3>
                                     <p className="steps-meta">Step-by-step decoder output</p>
                                 </div>
-
-                                {result.steps.length === 0 ? (
-                                    <p className="result-empty-text">
-                                        No decoding steps were applied.
-                                    </p>
-                                ) : (
-                                    <ol className="steps-list">
-                                        {result.steps.map((step, index) => (
-                                            <li
-                                                key={`${step.decoderName}-${index}`}
-                                                className="step-card"
-                                            >
-                                                <div className="step-top">
-                                                    <div className="step-title-group">
-                                                        <span className="step-index">
-                                                            Step {index + 1}
-                                                        </span>
-                                                        <strong>{step.decoderName}</strong>
-                                                    </div>
-
-                                                    <span
-                                                        className={`confidence-chip ${getConfidenceTone(step.confidence)}`}
-                                                    >
-                                                        {step.confidence.toFixed(2)}
-                                                    </span>
-                                                </div>
-
-                                                <div className="step-grid">
-                                                    <div className="step-block">
-                                                        <p className="block-label">Input</p>
-                                                        <pre>{step.input}</pre>
-                                                    </div>
-
-                                                    <div className="step-block">
-                                                        <p className="block-label">Output</p>
-                                                        <pre>{step.output}</pre>
-                                                    </div>
-                                                </div>
-
-                                                <div className="step-block">
-                                                    <p className="block-label">Explanation</p>
-                                                    <p className="step-copy">{step.explanation}</p>
-                                                </div>
-                                            </li>
-                                        ))}
-                                    </ol>
-                                )}
+                                <DecodePipeline steps={result.steps} />
                             </div>
                         </>
                     )}
