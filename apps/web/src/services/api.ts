@@ -6,7 +6,7 @@ import type {
     IdentifyResult,
 } from '@rasbur/shared';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3001';
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '').trim().replace(/\/$/, '');
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
     const response = await fetch(`${API_BASE_URL}${path}`, {

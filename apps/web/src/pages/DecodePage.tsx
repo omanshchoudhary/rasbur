@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { DecodeResult } from '@rasbur/shared';
-import { api } from '../services/api.js';
+import { api } from '@/services/api.js';
 
 function getConfidenceTone(confidence: number): string {
     if (confidence >= 0.8) return 'confidence-high';

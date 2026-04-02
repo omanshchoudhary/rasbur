@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { api } from '../services/api.js';
+import { api } from '@/services/api.js';
 
 export default function HomePage() {
     const [decoderCount, setDecoderCount] = useState<number | null>(null);
