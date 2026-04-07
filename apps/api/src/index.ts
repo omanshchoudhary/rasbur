@@ -1,9 +1,11 @@
+import { createServer } from 'node:http';
 import mongoose from 'mongoose';
 import { app } from './app.js';
 import { env } from './config/env.js';
 import { connectDB } from './db/mongodb.js';
 import { logger } from './logger.js';
 import { checkRedisConnection } from './cache/redis.js';
+import { createSocketServer } from './websocket/server.js';
 
 let isShuttingDown = false;
 
@@ -11,7 +13,9 @@ const startServer = async (): Promise<void> => {
     try {
         await connectDB();
         await checkRedisConnection();
-        const server = app.listen(env.PORT, () => {
+        const httpServer = createServer(app);
+        const io = createSocketServer(httpServer);
+        httpServer.listen(env.PORT, () => {
             logger.info(
                 {
                     port: env.PORT,
@@ -19,7 +23,7 @@ const startServer = async (): Promise<void> => {
                 },
                 'API server started'
             );
-        });
+        })
 
         const shutdown = async (signal: NodeJS.Signals): Promise<void> => {
             if (isShuttingDown) {
@@ -29,20 +33,23 @@ const startServer = async (): Promise<void> => {
             isShuttingDown = true;
             logger.info({ signal }, 'Shutdown signal received');
 
-            server.close(async (serverError) => {
-                if (serverError) {
-                    logger.error({ err: serverError }, 'Error while closing HTTP server');
-                    process.exit(1);
-                }
-                try {
-                    await mongoose.disconnect();
-                    logger.info('MongoDB disconnected');
-                    process.exit(0);
-                } catch (disconnectError) {
-                    logger.error({ err: disconnectError }, 'Error while disconnecting MongoDB');
-                    process.exit(1);
-                }
+            io.close(() => {
+                httpServer.close(async (serverError) => {
+                    if (serverError) {
+                        logger.error({ err: serverError }, 'Error while closing HTTP server');
+                        process.exit(1);
+                    }
+                    try {
+                        await mongoose.disconnect();
+                        logger.info('MongoDB disconnected');
+                        process.exit(0);
+                    } catch (disconnectError) {
+                        logger.error({ err: disconnectError }, 'Error while disconnecting MongoDB');
+                        process.exit(1);
+                    }
+                });
             });
+
         };
 
         process.on('SIGINT', () => {
