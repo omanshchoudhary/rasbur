@@ -39,14 +39,14 @@ export default function DecodePage() {
         <main className="decode-page">
             <section className="decode-hero">
                 <p className="decode-kicker">Decode Workspace</p>
-                <h1>Inspect an encoded string</h1>
+                <h1>Inspect encoded input with full step context</h1>
                 <p className="decode-subtitle">
-                    Paste a value, run the decoder pipeline, and inspect each transformation step.
+                    Paste input, run the decode pipeline, and review each transformation clearly.
                 </p>
             </section>
 
             <section className="decode-shell">
-                <div className="decode-panel">
+                <div className="decode-panel glass-surface">
                     <div className="panel-header">
                         <h2>Input</h2>
                         <p className="panel-meta">Paste raw encoded text</p>
@@ -68,7 +68,7 @@ export default function DecodePage() {
                     {errorMessage && <p className="decode-error">{errorMessage}</p>}
                 </div>
 
-                <div className="result-panel">
+                <div className="result-panel glass-surface">
                     <div className="result-header">
                         <div>
                             <p className="result-kicker">Result</p>

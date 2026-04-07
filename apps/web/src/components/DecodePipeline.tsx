@@ -19,7 +19,7 @@ function getConfidenceTier(confidence: number): 'high' | 'mid' | 'low' {
 
 export default function DecodePipeline({ steps }: DecodePipelineProps) {
     const [expandedSteps, setExpandedSteps] = useState<Record<number, boolean>>(() =>
-        Object.fromEntries(steps.map((_, index) => [index, index === 0])),
+        Object.fromEntries(steps.map((_, index) => [index, index === 0]))
     );
 
     function toggleStep(index: number): void {
@@ -46,7 +46,9 @@ export default function DecodePipeline({ steps }: DecodePipelineProps) {
                     >
                         <div className="pipeline-connector" aria-hidden="true" />
 
-                        <div className={`pipeline-card pipeline-card--${tier}`}>
+                        <div
+                            className={`pipeline-card glass-surface glass-surface--soft pipeline-card--${tier}`}
+                        >
                             <div className="pipeline-top">
                                 <div className="pipeline-title-group">
                                     <span className="pipeline-index">Step {index + 1}</span>

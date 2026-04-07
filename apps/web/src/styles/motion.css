@@ -1,0 +1,147 @@
+/* Entry reveal animation */
+.reveal-up {
+    opacity: 0;
+    transform: translateY(14px);
+    animation: revealUp 560ms var(--ease-out) forwards;
+}
+
+.stagger-1 {
+    animation-delay: 40ms;
+}
+
+.stagger-2 {
+    animation-delay: 110ms;
+}
+
+.stagger-3 {
+    animation-delay: 180ms;
+}
+
+.stagger-4 {
+    animation-delay: 250ms;
+}
+
+.stagger-5 {
+    animation-delay: 320ms;
+}
+
+.stagger-6 {
+    animation-delay: 390ms;
+}
+
+/* Hero decorative orb drift (subtle, non-essential) */
+.home-hero::after {
+    animation: heroOrbDrift 9s ease-in-out infinite;
+}
+
+/* Result loading pulse */
+.result-loading-card .result-empty {
+    animation: resultPulse 1.2s ease-in-out infinite;
+}
+
+/* Micro-interactions */
+.home-feature-card,
+.home-trust-item,
+.home-cta-primary,
+.home-cta-secondary,
+.app-nav-link,
+.pipeline-toggle {
+    transition:
+        transform var(--motion-fast) ease,
+        border-color var(--motion-fast) ease,
+        background-color var(--motion-fast) ease,
+        color var(--motion-fast) ease,
+        box-shadow var(--motion-fast) ease;
+}
+
+/* Lift effects only on desktop-like pointers */
+@media (hover: hover) and (pointer: fine) and (min-width: 901px) {
+    .glass-surface:hover {
+        transform: translateY(-2px);
+        border-color: rgba(255, 255, 255, 0.2);
+        box-shadow:
+            0 22px 52px rgba(0, 0, 0, 0.36),
+            inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    .home-feature-card:hover,
+    .home-trust-item:hover {
+        transform: translateY(-2px);
+    }
+
+    .home-cta-primary:hover,
+    .home-cta-secondary:hover,
+    .app-nav-link:hover,
+    .pipeline-toggle:hover {
+        transform: translateY(-1px);
+    }
+}
+
+/* Keyframes */
+@keyframes revealUp {
+    from {
+        opacity: 0;
+        transform: translateY(14px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes heroOrbDrift {
+    0% {
+        transform: translate(0, 0) scale(1);
+        opacity: 0.82;
+    }
+
+    50% {
+        transform: translate(-22px, -16px) scale(1.06);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translate(0, 0) scale(1);
+        opacity: 0.82;
+    }
+}
+
+@keyframes resultPulse {
+    0% {
+        opacity: 0.62;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0.62;
+    }
+}
+
+/* Reduced motion safety */
+@media (prefers-reduced-motion: reduce) {
+    .reveal-up,
+    .home-hero::after {
+        animation: none;
+        opacity: 1;
+        transform: none;
+    }
+
+    .result-loading-card .result-empty {
+        animation: none;
+    }
+
+    .glass-surface,
+    .home-feature-card,
+    .home-trust-item,
+    .home-cta-primary,
+    .home-cta-secondary,
+    .app-nav-link,
+    .pipeline-toggle {
+        transition: none;
+        transform: none;
+    }
+}

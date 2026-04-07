@@ -28,6 +28,12 @@ export default function AppLayout() {
                             Decode
                         </NavLink>
                     </nav>
+
+                    <div className="app-header-actions" aria-label="Header actions">
+                        <NavLink className="app-nav-link app-nav-link--cta" to="/decode">
+                            Decode Workspace
+                        </NavLink>
+                    </div>
                 </div>
             </header>
 

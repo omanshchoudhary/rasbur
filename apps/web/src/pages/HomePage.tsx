@@ -19,13 +19,14 @@ export default function HomePage() {
     }, []);
     return (
         <main className="home-page">
-            <section className="home-hero">
+            <section className="home-hero glass-surface glass-surface--hero">
                 <p className="home-kicker reveal-up stagger-1">Rasbur Platform</p>
                 <h1 className="home-title reveal-up stagger-2">
-                    The decoder that identifies, unwraps, and explains.
+                    Decode encoded strings with clear, step-by-step output.
                 </h1>
                 <p className="home-subtitle reveal-up stagger-3">
-                    Stop guessing encodings. Let Rasbur decode it with a clear, step-by-step output.
+                    Identify likely formats, apply decoding layers, and inspect each transformation
+                    in one workspace.
                 </p>
 
                 <div className="home-cta-row reveal-up stagger-4">
@@ -50,37 +51,39 @@ export default function HomePage() {
                 </div>
             </section>
 
-            <section className="home-section reveal-up">
+            <section className="home-section glass-surface reveal-up">
                 <div className="home-section-head">
                     <p className="home-section-kicker">Use Cases</p>
-                    <h2>Built for real decoding workflows</h2>
+                    <h2>Built for practical decoding workflows</h2>
                 </div>
 
                 <div className="home-feature-grid">
                     <article className="home-feature-card">
                         <p className="home-feature-kicker">Analysis</p>
                         <h3>Unknown input inspection</h3>
-                        <p>Identify likely encoding formats before applying transforms.</p>
+                        <p>Identify likely encoding formats before applying decode steps.</p>
                     </article>
 
                     <article className="home-feature-card">
                         <p className="home-feature-kicker">Reliability</p>
                         <h3>Step-by-step traceability</h3>
-                        <p>Review each decode step with input, output, and explanation.</p>
+                        <p>
+                            Review each decode step with input, output, confidence, and explanation.
+                        </p>
                     </article>
 
                     <article className="home-feature-card">
                         <p className="home-feature-kicker">Speed</p>
                         <h3>Faster troubleshooting</h3>
-                        <p>Reduce trial-and-error when handling encoded payloads.</p>
+                        <p>Reduce trial-and-error when debugging encoded payloads.</p>
                     </article>
                 </div>
             </section>
 
-            <section className="home-section reveal-up">
+            <section className="home-section glass-surface reveal-up">
                 <div className="home-section-head">
                     <p className="home-section-kicker">How It Works</p>
-                    <h2>Paste → Analyze → Transform → Export</h2>
+                    <h2>Paste → Analyze → Decode → Use</h2>
                 </div>
 
                 <ol className="home-steps-grid">
@@ -101,37 +104,37 @@ export default function HomePage() {
                     </li>
                     <li>
                         <span>04</span>
-                        <h3>Export</h3>
-                        <p>Use final output and step trace for downstream workflows.</p>
+                        <h3>Use</h3>
+                        <p>Use final output and step trace in your workflow.</p>
                     </li>
                 </ol>
             </section>
 
-            <section className="home-section reveal-up">
+            <section className="home-section glass-surface reveal-up">
                 <div className="home-section-head">
                     <p className="home-section-kicker">Current Status</p>
-                    <h2>What is ready now</h2>
+                    <h2>What is available now</h2>
                 </div>
 
                 <div className="home-trust-row">
                     <div className="home-trust-item">
-                        <strong>18+ decoders support</strong>
-                        <p>Active and available in the current engine.</p>
+                        <strong>18+ decoders</strong>
+                        <p>Available in the current engine.</p>
                     </div>
                     <div className="home-trust-item is-muted">
                         <strong>More platform modules</strong>
-                        <p>Coming soon as backend milestones are completed.</p>
+                        <p>Planned as upcoming backend milestones are completed.</p>
                     </div>
                     <div className="home-trust-item is-muted">
                         <strong>Expanded product features</strong>
-                        <p>Planned for upcoming release phases.</p>
+                        <p>Scheduled for upcoming release phases.</p>
                     </div>
                 </div>
             </section>
 
-            <section className="home-final-cta reveal-up">
+            <section className="home-final-cta glass-surface glass-surface--strong reveal-up">
                 <h2>Inspect payloads with full step visibility.</h2>
-                <p>Use the decode workspace to analyze inputs without losing context.</p>
+                <p>Use the decode workspace to analyze inputs with clear context.</p>
                 <Link className="home-cta-primary" to="/decode">
                     Open Decode Workspace
                 </Link>
