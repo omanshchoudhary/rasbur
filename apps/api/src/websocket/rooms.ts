@@ -4,14 +4,14 @@ import type { AuthenticatedSocket } from './types.js';
 type RoomAck = (response: { ok: boolean; room?: string; error?: string }) => void;
 
 function canAccessRoom(userId: string, room: string): boolean {
-    if (room == `user:${userId}`) {
+    if (room === `user:${userId}`) {
         return true;
     }
+
     return room.startsWith(`decode:${userId}:`);
 }
 
 export function registerRoomHandlers(socket: AuthenticatedSocket): void {
-    
     // Private Rooms For Each User
     const userRoom = `user:${socket.data.user.id}`;
     socket.join(userRoom);

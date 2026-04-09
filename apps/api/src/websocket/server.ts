@@ -3,8 +3,9 @@ import { Server as SocketIOServer } from 'socket.io';
 import { env } from '../config/env.js';
 import { logger } from '../logger.js';
 import { attachSocketAuth } from './auth.js';
-import { AuthenticatedSocket } from './types.js';
+import type { AuthenticatedSocket } from './types.js';
 import { registerRoomHandlers } from './rooms.js';
+import { registerLiveDecodeHandler } from './liveDecode.js';
 
 const websocketOrigins =
     env.NODE_ENV === 'production'
@@ -32,7 +33,7 @@ export function createSocketServer(httpServer: HttpServer): SocketIOServer {
             'WebSocket client connected'
         );
         registerRoomHandlers(socket);
-
+        registerLiveDecodeHandler(socket);
         socket.on('disconnect', (reason) => {
             logger.info(
                 {
