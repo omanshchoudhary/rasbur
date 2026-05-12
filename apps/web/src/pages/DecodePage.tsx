@@ -1,15 +1,33 @@
-import { useState } from 'react';
-import type { DecodeResult } from '@rasbur/shared';
+import { useState, useEffect } from 'react';
+import type { DecodeResult, DecodeOptions } from '@rasbur/shared';
 import { api } from '@/services/api.js';
 import DecodePipeline from '@/components/DecodePipeline.js';
+import { useWebSocket } from '@/hooks/useWebSocket.js';
 
 type RequestState = 'idle' | 'loading' | 'success' | 'error';
+
+type LiveDecodeSuccess = {
+    ok: true;
+    result: DecodeResult;
+};
+
+type LiveDecodeError = {
+    ok: false;
+    error: string;
+    issues?: Array<{ path: string; message: string }>;
+};
+
+type LiveDecodeResponse = LiveDecodeSuccess | LiveDecodeError;
+
+const LIVE_DECODE_DELAY_MS = 300;
 
 export default function DecodePage() {
     const [input, setInput] = useState('');
     const [result, setResult] = useState<DecodeResult | null>(null);
     const [requestState, setRequestState] = useState<RequestState>('idle');
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+    const { socket, isConnected } = useWebSocket();
 
     async function handleDecode() {
         if (!input.trim()) {
@@ -33,6 +51,47 @@ export default function DecodePage() {
             setResult(null);
         }
     }
+
+    useEffect(() => {
+        if (!socket || !isConnected) {
+            return;
+        }
+
+        const trimmedInput = input.trim();
+
+        if (!trimmedInput) {
+            setResult(null);
+            setRequestState('idle');
+            setErrorMessage(null);
+            return;
+        }
+
+        setRequestState('loading');
+        setErrorMessage(null);
+
+        const timeoutId = window.setTimeout(() => {
+            const payload: { input: string; options?: DecodeOptions } = {
+                input: trimmedInput,
+            };
+
+            socket.emit('decode:live', payload, (response: LiveDecodeResponse) => {
+                if (!response.ok) {
+                    setRequestState('error');
+                    setErrorMessage(response.error);
+                    return;
+                }
+
+                setResult(response.result);
+                setRequestState('success');
+                setErrorMessage(null);
+            });
+        }, LIVE_DECODE_DELAY_MS);
+
+        return () => {
+            window.clearTimeout(timeoutId);
+        };
+    }, [input, socket, isConnected]);
+
     const isLoading = requestState === 'loading';
 
     return (
