@@ -46,8 +46,8 @@ export interface IdentifyResult {
     input: string;
     matches: IdentifyMatch[];
 }
-// User Types
 
+// User Types
 export interface User {
     id: string;
     email: string;
@@ -73,7 +73,6 @@ export interface TeamMember {
 }
 
 // API Key Types
-
 export interface ApiKey {
     id: string;
     userId: string;

@@ -8,6 +8,7 @@ import '@/styles/home.css';
 import '@/styles/decode.css';
 import '@/styles/pipeline.css';
 import '@/styles/motion.css';
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
         <App />

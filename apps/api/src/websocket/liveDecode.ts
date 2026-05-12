@@ -3,6 +3,10 @@ import { decodeRequestSchema } from '@rasbur/shared';
 import { logger } from '../logger.js';
 import type { AuthenticatedSocket } from './types.js';
 
+const LIVE_DECODE_DEBOUNCE_MS = 250;
+const LIVE_DECODE_WINDOW_MS = 10_000;
+const LIVE_DECODE_MAX_EVENTS = 40;
+
 type LiveDecodeSuccess = {
     ok: true;
     result: ReturnType<typeof decodePipeline.decode>;
@@ -17,48 +21,148 @@ type LiveDecodeError = {
 type LiveDecodeResponse = LiveDecodeSuccess | LiveDecodeError;
 type LiveDecodeAck = (response: LiveDecodeResponse) => void;
 
+type PendingLiveDecodeEvent = {
+    payload: unknown;
+    ack?: LiveDecodeAck;
+};
+
+function emitLiveDecodeResult(
+    socket: AuthenticatedSocket,
+    response: LiveDecodeResponse,
+    ack?: LiveDecodeAck
+): void {
+    socket.emit('decode:live:result', response);
+    ack?.(response);
+}
+
+function processLiveDecode(
+    socket: AuthenticatedSocket,
+    payload: unknown,
+    ack?: LiveDecodeAck
+): void {
+    const parsed = decodeRequestSchema.safeParse(payload);
+
+    if (!parsed.success) {
+        const response: LiveDecodeError = {
+            ok: false,
+            error: 'Validation error',
+            issues: parsed.error.issues.map((issue) => ({
+                path: issue.path.join('.') || 'input',
+                message: issue.message,
+            })),
+        };
+
+        emitLiveDecodeResult(socket, response, ack);
+        return;
+    }
+
+    try {
+        registerDecoders();
+        const result = decodePipeline.decode(parsed.data.input, parsed.data.options);
+
+        const response: LiveDecodeSuccess = {
+            ok: true,
+            result,
+        };
+
+        emitLiveDecodeResult(socket, response, ack);
+    } catch (error) {
+        logger.error(
+            { err: error, socketId: socket.id, userId: socket.data.user.id },
+            'decode:live handler failed'
+        );
+
+        const response: LiveDecodeError = {
+            ok: false,
+            error: 'Failed to decode live input',
+        };
+
+        emitLiveDecodeResult(socket, response, ack);
+    }
+}
+
+function acknowledgeSupersededLiveDecode(ack?: LiveDecodeAck): void {
+    ack?.({
+        ok: false,
+        error: 'Superseded by a newer live decode input.',
+    });
+}
+
+function acknowledgeCancelledLiveDecode(ack?: LiveDecodeAck): void {
+    ack?.({
+        ok: false,
+        error: 'Live decode request cancelled because the socket disconnected.',
+    });
+}
+
 export function registerLiveDecodeHandler(socket: AuthenticatedSocket): void {
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+    let pendingEvent: PendingLiveDecodeEvent | null = null;
+    const processedDecodeTimestamps: number[] = [];
+
     socket.on('decode:live', (payload: unknown, ack?: LiveDecodeAck) => {
-        const parsed = decodeRequestSchema.safeParse(payload);
-
-        if (!parsed.success) {
-            const response: LiveDecodeError = {
-                ok: false,
-                error: 'Validation error',
-                issues: parsed.error.issues.map((issue) => ({
-                    path: issue.path.join('.') || 'input',
-                    message: issue.message,
-                })),
-            };
-
-            socket.emit('decode:live:result', response);
-            ack?.(response);
-            return;
+        if (pendingEvent?.ack) {
+            acknowledgeSupersededLiveDecode(pendingEvent.ack);
         }
 
-        try {
-            registerDecoders();
-            const result = decodePipeline.decode(parsed.data.input, parsed.data.options);
+        pendingEvent = { payload, ack };
 
-            const response: LiveDecodeSuccess = {
-                ok: true,
-                result,
-            };
-            socket.emit('decode:live:result', response);
-            ack?.(response);
-        } catch (error) {
-            logger.error(
-                { err: error, socketId: socket.id, userId: socket.data.user.id },
-                'decode:live handler failed'
-            );
-
-            const response: LiveDecodeError = {
-                ok: false,
-                error: 'Failed to decode live input',
-            };
-
-            socket.emit('decode:live:result', response);
-            ack?.(response);
+        if (debounceTimer) {
+            clearTimeout(debounceTimer);
         }
+
+        debounceTimer = setTimeout(() => {
+            if (!pendingEvent) {
+                return;
+            }
+
+            const now = Date.now();
+
+            while (
+                processedDecodeTimestamps.length > 0 &&
+                now - processedDecodeTimestamps[0]! > LIVE_DECODE_WINDOW_MS
+            ) {
+                processedDecodeTimestamps.shift();
+            }
+
+            if (processedDecodeTimestamps.length >= LIVE_DECODE_MAX_EVENTS) {
+                logger.warn(
+                    { socketId: socket.id, userId: socket.data.user.id },
+                    'decode:live throttled due to high decode rate'
+                );
+
+                const throttledEvent = pendingEvent;
+                pendingEvent = null;
+
+                emitLiveDecodeResult(
+                    socket,
+                    {
+                        ok: false,
+                        error: 'Too many live decode requests. Please slow down.',
+                    },
+                    throttledEvent.ack
+                );
+                return;
+            }
+
+            const { payload: latestPayload, ack: latestAck } = pendingEvent;
+            pendingEvent = null;
+            processedDecodeTimestamps.push(now);
+
+            processLiveDecode(socket, latestPayload, latestAck);
+        }, LIVE_DECODE_DEBOUNCE_MS);
+    });
+
+    socket.on('disconnect', () => {
+        if (debounceTimer) {
+            clearTimeout(debounceTimer);
+            debounceTimer = null;
+        }
+
+        if (pendingEvent?.ack) {
+            acknowledgeCancelledLiveDecode(pendingEvent.ack);
+        }
+
+        pendingEvent = null;
     });
 }

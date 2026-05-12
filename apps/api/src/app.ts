@@ -29,8 +29,7 @@ app.use(express.urlencoded({ extended: true }));
 // Generates a unique ID for every incoming request
 app.use((req, res, next) => {
     const requestId = randomUUID();
-    const request = req as RequestWithId;
-    request.requestId = requestId;
+    (req as RequestWithId).requestId = requestId;
     res.setHeader('X-Request-Id', requestId);
     next();
 });
