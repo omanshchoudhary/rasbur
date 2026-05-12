@@ -27,7 +27,7 @@ export default function DecodePage() {
     const [requestState, setRequestState] = useState<RequestState>('idle');
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-    const { socket, isConnected } = useWebSocket();
+    const { socket, status, isConnected } = useWebSocket();
 
     async function handleDecode() {
         if (!input.trim()) {
@@ -93,7 +93,16 @@ export default function DecodePage() {
     }, [input, socket, isConnected]);
 
     const isLoading = requestState === 'loading';
+    const connectionLabel =
+        status === 'connected'
+            ? 'Live connected'
+            : status === 'connecting'
+              ? 'Connecting'
+              : status === 'error'
+                ? 'Connection error'
+                : 'Offline';
 
+    const connectionClassName = `connection-status connection-status--${status}`;
     return (
         <main className="decode-page">
             <section className="decode-hero">
@@ -107,8 +116,16 @@ export default function DecodePage() {
             <section className="decode-shell">
                 <div className="decode-panel glass-surface">
                     <div className="panel-header">
-                        <h2>Input</h2>
-                        <p className="panel-meta">Paste raw encoded text</p>
+                        <div>
+                            <h2>Input</h2>
+                            <p className="panel-meta">
+                                {isConnected
+                                    ? 'Live decoding as you type'
+                                    : 'Paste raw encoded text'}
+                            </p>
+                        </div>
+
+                        <span className={connectionClassName}>{connectionLabel}</span>
                     </div>
 
                     <textarea

@@ -140,11 +140,7 @@
 
 .result-highlight {
     background:
-        linear-gradient(
-            180deg,
-            rgba(66, 207, 162, 0.08) 0%,
-            rgba(230, 184, 91, 0.06) 100%
-        ),
+        linear-gradient(180deg, rgba(66, 207, 162, 0.08) 0%, rgba(230, 184, 91, 0.06) 100%),
         rgba(16, 23, 35, 0.64);
     border-color: rgba(66, 207, 162, 0.24);
 }
@@ -208,4 +204,43 @@
     .result-badge {
         font-size: 0.8rem;
     }
+}
+
+.panel-header {
+    align-items: flex-start;
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+}
+
+.connection-status {
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 999px;
+    color: var(--color-muted);
+    flex: 0 0 auto;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 0.45rem 0.7rem;
+    text-transform: uppercase;
+}
+
+.connection-status--connected {
+    background: rgba(52, 211, 153, 0.12);
+    border-color: rgba(52, 211, 153, 0.3);
+    color: #6ee7b7;
+}
+
+.connection-status--connecting,
+.connection-status--idle {
+    background: rgba(251, 191, 36, 0.1);
+    border-color: rgba(251, 191, 36, 0.24);
+    color: #fcd34d;
+}
+
+.connection-status--disconnected,
+.connection-status--error {
+    background: rgba(248, 113, 113, 0.1);
+    border-color: rgba(248, 113, 113, 0.25);
+    color: #fca5a5;
 }
