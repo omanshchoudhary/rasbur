@@ -26,14 +26,26 @@ export default function DecodePage() {
     const [result, setResult] = useState<DecodeResult | null>(null);
     const [requestState, setRequestState] = useState<RequestState>('idle');
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [decodeSource, setDecodeSource] = useState<'live' | 'rest' | null>(null);
 
     const { socket, status, isConnected } = useWebSocket();
 
+    async function decodeWithRest(value: string) {
+        const decodeResult = await api.decode(value);
+        setResult(decodeResult);
+        setRequestState('success');
+        setErrorMessage(null);
+        setDecodeSource('rest');
+    }
+
     async function handleDecode() {
-        if (!input.trim()) {
+        const trimmedInput = input.trim();
+
+        if (!trimmedInput) {
             setRequestState('error');
             setErrorMessage('Please enter something to decode.');
             setResult(null);
+            setDecodeSource(null);
             return;
         }
 
@@ -42,52 +54,81 @@ export default function DecodePage() {
             setErrorMessage(null);
             setResult(null);
 
-            const decodeResult = await api.decode(input);
-            setResult(decodeResult);
-            setRequestState('success');
+            await decodeWithRest(trimmedInput);
         } catch (err) {
             setRequestState('error');
             setErrorMessage('Failed to decode input.');
             setResult(null);
+            setDecodeSource(null);
         }
     }
 
     useEffect(() => {
-        if (!socket || !isConnected) {
-            return;
-        }
-
         const trimmedInput = input.trim();
 
         if (!trimmedInput) {
             setResult(null);
             setRequestState('idle');
             setErrorMessage(null);
+            setDecodeSource(null);
             return;
         }
 
+        let cancelled = false;
+
+        async function runRestFallback() {
+            try {
+                const decodeResult = await api.decode(trimmedInput);
+
+                if (cancelled) {
+                    return;
+                }
+                setResult(decodeResult);
+                setRequestState('success');
+                setErrorMessage(null);
+                setDecodeSource('rest');
+            } catch (err) {
+                if (cancelled) {
+                    return;
+                }
+
+                setRequestState('error');
+                setErrorMessage('Failed to decode input.');
+                setResult(null);
+                setDecodeSource(null);
+            }
+        }
         setRequestState('loading');
         setErrorMessage(null);
 
         const timeoutId = window.setTimeout(() => {
+            if (!socket || !isConnected) {
+                void runRestFallback();
+                return;
+            }
+
             const payload: { input: string; options?: DecodeOptions } = {
                 input: trimmedInput,
             };
 
             socket.emit('decode:live', payload, (response: LiveDecodeResponse) => {
+                if (cancelled) {
+                    return;
+                }
                 if (!response.ok) {
-                    setRequestState('error');
-                    setErrorMessage(response.error);
+                    void runRestFallback();
                     return;
                 }
 
                 setResult(response.result);
                 setRequestState('success');
                 setErrorMessage(null);
+                setDecodeSource('live');
             });
         }, LIVE_DECODE_DELAY_MS);
 
         return () => {
+            cancelled = true;
             window.clearTimeout(timeoutId);
         };
     }, [input, socket, isConnected]);
