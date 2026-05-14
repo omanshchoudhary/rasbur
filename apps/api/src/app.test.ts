@@ -1,8 +1,29 @@
 import request from 'supertest';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { app } from './app.js';
 
+const redisMockState = vi.hoisted(() => ({
+    counters: new Map<string, number>(),
+}));
+
+vi.mock('./cache/redis.js', () => ({
+    redis: {
+        expire: vi.fn(async () => 1),
+        get: vi.fn(async () => 'ok'),
+        incr: vi.fn(async (key: string) => {
+            const nextCount = (redisMockState.counters.get(key) ?? 0) + 1;
+            redisMockState.counters.set(key, nextCount);
+            return nextCount;
+        }),
+        set: vi.fn(async () => 'OK'),
+    },
+}));
+
 describe('API app', () => {
+    beforeEach(() => {
+        redisMockState.counters.clear();
+    });
+
     it('returns health status from GET /health', async () => {
         const response = await request(app).get('/health');
 
