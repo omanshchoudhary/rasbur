@@ -11,6 +11,9 @@ const envSchema = z.object({
     UPSTASH_REDIS_REST_URL: z.string().url('Upstash Redis REST URL is required'),
     UPSTASH_REDIS_REST_TOKEN: z.string().min(1, 'Upstash Redis REST token is required'),
     JWT_PUBLIC_KEY: z.string().min(1, 'JWT public key is required'),
+    GOOGLE_CLIENT_ID: z.string().min(1, 'Google client ID is required'),
+    GOOGLE_CLIENT_SECRET: z.string().min(1, 'Google client secret is required'),
+    GOOGLE_CALLBACK_URL: z.string().url('Google callback URL must be a valid URL'),
 });
 
 const parsed = envSchema.safeParse(process.env);
