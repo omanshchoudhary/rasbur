@@ -2,6 +2,7 @@ import { decodePipeline, registerDecoders } from '@rasbur/decoders';
 import { decodeRequestSchema } from '@rasbur/shared';
 import { logger } from '../logger.js';
 import type { AuthenticatedSocket } from './types.js';
+import { checkWebSocketRateLimit } from './rateLimit.js';
 
 const LIVE_DECODE_DEBOUNCE_MS = 250;
 const LIVE_DECODE_WINDOW_MS = 10_000;
@@ -111,7 +112,7 @@ export function registerLiveDecodeHandler(socket: AuthenticatedSocket): void {
             clearTimeout(debounceTimer);
         }
 
-        debounceTimer = setTimeout(() => {
+        debounceTimer = setTimeout(async () => {
             if (!pendingEvent) {
                 return;
             }
@@ -145,11 +146,35 @@ export function registerLiveDecodeHandler(socket: AuthenticatedSocket): void {
                 return;
             }
 
-            const { payload: latestPayload, ack: latestAck } = pendingEvent;
+            const eventToProcess = pendingEvent;
             pendingEvent = null;
+
+            const rateLimit = await checkWebSocketRateLimit(socket.data.user.id);
+            if (!rateLimit.allowed) {
+                logger.warn(
+                    {
+                        socketId: socket.id,
+                        userId: socket.data.user.id,
+                        limit: rateLimit.limit,
+                        resetSeconds: rateLimit.resetSeconds,
+                    },
+                    'decode:live blocked by per-user websocket rate limit'
+                );
+
+                emitLiveDecodeResult(
+                    socket,
+                    {
+                        ok: false,
+                        error: 'Too many live decode requests. Please wait before trying again.',
+                    },
+                    eventToProcess.ack
+                );
+                return;
+            }
+
             processedDecodeTimestamps.push(now);
 
-            processLiveDecode(socket, latestPayload, latestAck);
+            processLiveDecode(socket, eventToProcess.payload, eventToProcess.ack);
         }, LIVE_DECODE_DEBOUNCE_MS);
     });
 
