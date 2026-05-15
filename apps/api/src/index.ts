@@ -6,7 +6,7 @@ import { connectDB } from './db/mongodb.js';
 import { logger } from './logger.js';
 import { checkRedisConnection } from './cache/redis.js';
 import { createSocketServer } from './websocket/server.js';
-import { configureGoogleStrategy } from './config/passport.js';
+import { configureGoogleStrategy, configureGitHubStrategy } from './config/passport.js';
 
 let isShuttingDown = false;
 
@@ -17,6 +17,7 @@ const startServer = async (): Promise<void> => {
         const httpServer = createServer(app);
         const io = createSocketServer(httpServer);
         configureGoogleStrategy();
+        configureGitHubStrategy();
         httpServer.listen(env.PORT, () => {
             logger.info(
                 {
