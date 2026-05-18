@@ -1,6 +1,7 @@
 import { Router, type Request, type Response } from 'express';
 import passport from 'passport';
 import { issueAuthTokens } from '../auth/tokens.js';
+import { rotateRefreshToken, storeRefreshSession } from '../auth/refresh.service.js';
 
 export const authRouter = Router();
 
@@ -44,6 +45,7 @@ authRouter.get(
             email: user.email,
             tier: user.tier,
         });
+        await storeRefreshSession(user.id, tokens.refreshJti, tokens.refreshExpiresAt);
 
         res.status(200).json({
             ok: true,
@@ -98,6 +100,7 @@ authRouter.get(
             email: user.email,
             tier: user.tier,
         });
+        await storeRefreshSession(user.id, tokens.refreshJti, tokens.refreshExpiresAt);
 
         res.status(200).json({
             ok: true,
@@ -113,3 +116,24 @@ authRouter.get(
         });
     }
 );
+
+authRouter.post('/refresh', async (req: Request, res: Response) => {
+    const refreshToken = req.body?.refreshToken;
+    if (typeof refreshToken !== 'string' || !refreshToken.trim()) {
+        return res.status(401).json({ ok: false, error: 'Missing refresh token' });
+    }
+
+    try {
+        const tokens = await rotateRefreshToken(refreshToken);
+
+        return res.status(200).json({
+            ok: true,
+            ...tokens,
+        });
+    } catch {
+        return res.status(401).json({
+            ok: false,
+            error: 'Invalid refresh token',
+        });
+    }
+});
