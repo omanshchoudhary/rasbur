@@ -1,7 +1,7 @@
 import { Router, type Request, type Response } from 'express';
 import passport from 'passport';
 import { issueAuthTokens } from '../auth/tokens.js';
-import { rotateRefreshToken, storeRefreshSession } from '../auth/refresh.service.js';
+import { logoutUser, rotateRefreshToken, storeRefreshSession } from '../auth/refresh.service.js';
 
 export const authRouter = Router();
 
@@ -135,5 +135,19 @@ authRouter.post('/refresh', async (req: Request, res: Response) => {
             ok: false,
             error: 'Invalid refresh token',
         });
+    }
+});
+
+authRouter.post('/logout', async (req: Request, res: Response) => {
+    const refreshToken = req.body?.refreshToken;
+
+    if (typeof refreshToken !== 'string' || !refreshToken.trim()) {
+        return res.status(401).json({ ok: false, error: 'Missing refresh token' });
+    }
+    try {
+        await logoutUser(refreshToken);
+        return res.status(200).json({ ok: true });
+    } catch {
+        return res.status(401).json({ ok: false, error: 'Invalid refresh token' });
     }
 });

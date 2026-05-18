@@ -3,7 +3,6 @@ import { importSPKI, jwtVerify } from 'jose';
 import { issueAuthTokens } from './tokens.js';
 import { env } from '../config/env.js';
 
-
 const JWT_ALG = 'RS256';
 const publicKey = await importSPKI(env.JWT_PUBLIC_KEY.replace(/\\n/g, '\n'), JWT_ALG);
 
@@ -25,6 +24,7 @@ export async function verifyRefreshSession(userId: string, jti: string) {
     }
     return jti === storedJti;
 }
+
 export async function rotateRefreshToken(refreshToken: string) {
     const { payload } = await jwtVerify(refreshToken, publicKey, {
         algorithms: [JWT_ALG],
@@ -51,4 +51,19 @@ export async function rotateRefreshToken(refreshToken: string) {
     await storeRefreshSession(typed.sub, tokens.refreshJti, tokens.refreshExpiresAt);
 
     return tokens;
+}
+
+export async function logoutUser(refreshToken: string) {
+    const { payload } = await jwtVerify(refreshToken, publicKey, {
+        algorithms: [JWT_ALG],
+    });
+
+    const typed = payload as unknown as RefreshPayload;
+    if (!typed.sub || !typed.jti) {
+        throw new Error('Invalid refresh token');
+    }
+
+    const key = `refresh-session:${typed.sub}`;
+    await redis.del(key);
+
 }
