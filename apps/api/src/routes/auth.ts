@@ -1,5 +1,6 @@
 import { Router, type Request, type Response } from 'express';
 import passport from 'passport';
+import { issueAuthTokens } from '../auth/tokens.js';
 
 export const authRouter = Router();
 
@@ -19,11 +20,42 @@ authRouter.get(
         failureRedirect: '/login',
         failureMessage: false,
     }),
-    (_req: Request, res: Response) => {
+    async (req: Request, res: Response) => {
+        const user = req.user as
+            | {
+                  id: string;
+                  name: string;
+                  email: string;
+                  tier: string;
+                  avatar?: string | null;
+              }
+            | undefined;
+
+        if (!user) {
+            res.status(500).json({
+                ok: false,
+                error: 'OAuth user was not resolved',
+            });
+            return;
+        }
+
+        const tokens = await issueAuthTokens({
+            id: user.id,
+            email: user.email,
+            tier: user.tier,
+        });
+
         res.status(200).json({
             ok: true,
             provider: 'google',
-            message: 'Google authentication successful',
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                tier: user.tier,
+                avatar: user.avatar,
+            },
+            ...tokens,
         });
     }
 );
@@ -42,11 +74,42 @@ authRouter.get(
         failureRedirect: '/login',
         failureMessage: false,
     }),
-    (_req: Request, res: Response) => {
+    async (req: Request, res: Response) => {
+        const user = req.user as
+            | {
+                  id: string;
+                  name: string;
+                  email: string;
+                  tier: string;
+                  avatar?: string | null;
+              }
+            | undefined;
+
+        if (!user) {
+            res.status(500).json({
+                ok: false,
+                error: 'OAuth user was not resolved',
+            });
+            return;
+        }
+
+        const tokens = await issueAuthTokens({
+            id: user.id,
+            email: user.email,
+            tier: user.tier,
+        });
+
         res.status(200).json({
             ok: true,
             provider: 'github',
-            message: 'GitHub authentication successful',
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                tier: user.tier,
+                avatar: user.avatar,
+            },
+            ...tokens,
         });
     }
 );

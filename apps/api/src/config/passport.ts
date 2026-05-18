@@ -1,7 +1,13 @@
 import passport from 'passport';
-import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
-import { Strategy as GitHubStrategy } from 'passport-github2';
+import {
+    Strategy as GoogleStrategy,
+    type GoogleCallbackParameters,
+    type Profile as GoogleProfile,
+    type VerifyCallback as GoogleVerifyCallback,
+} from 'passport-google-oauth20';
+import { Strategy as GitHubStrategy, type Profile as GitHubProfile } from 'passport-github2';
 import { env } from './env.js';
+import { handleGithubOAuth, handleGoogleOAuth } from '../auth/oauth.service.js';
 
 export const configureGoogleStrategy = () => {
     passport.use(
@@ -12,8 +18,16 @@ export const configureGoogleStrategy = () => {
                 callbackURL: env.GOOGLE_CALLBACK_URL,
                 passReqToCallback: true,
             },
-            async (request, accessToken, refreshToken, profile, done) => {
-                return done(null, profile);
+            async (
+                _request: unknown,
+                _accessToken: string,
+                _refreshToken: string,
+                _params: GoogleCallbackParameters,
+                profile: GoogleProfile,
+                done: GoogleVerifyCallback
+            ) => {
+                const user = await handleGoogleOAuth(profile);
+                return done(null, user);
             }
         )
     );
@@ -23,12 +37,18 @@ export const configureGitHubStrategy = () => {
     passport.use(
         new GitHubStrategy(
             {
-                clientID: env.GITHUB_CLIENT_ID!,
-                clientSecret: env.GITHUB_CLIENT_SECRET!,
-                callbackURL: env.GITHUB_CALLBACK_URL!,
+                clientID: env.GITHUB_CLIENT_ID,
+                clientSecret: env.GITHUB_CLIENT_SECRET,
+                callbackURL: env.GITHUB_CALLBACK_URL,
             },
-            (accessToken: string, refreshToken: string, profile: any, done: any) => {
-                return done(null, profile);
+            async (
+                _accessToken: string,
+                _refreshToken: string,
+                profile: GitHubProfile,
+                done: (error: unknown, user?: unknown) => void
+            ) => {
+                const user = await handleGithubOAuth(profile);
+                return done(null, user);
             }
         )
     );
