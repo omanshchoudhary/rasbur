@@ -36,3 +36,11 @@ export const webhookSchema = z.object({
     url: z.string().url(),
     events: z.array(z.enum(['decode.complete', 'decode.failed', 'file.processed'])),
 });
+
+// Restrict User For Changing Details
+export const updateCurrentUserSchema = z.object({
+    name: z.string().min(1).max(80).optional(),
+    avatar: z.string().url().or(z.literal('')).nullable().optional(),
+}).refine((data) => data.name !== undefined || data.avatar !== undefined, {
+    message: 'At least one field (name or avatar) must be provided',
+});
