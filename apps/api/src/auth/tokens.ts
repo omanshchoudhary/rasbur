@@ -11,7 +11,7 @@ const REFRESH_TOKEN_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
 // Resolve path to the root private.pem file
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
-const privateKeyPath = join(__dirname, '../../../private.pem');
+const privateKeyPath = join(__dirname, '../../../../private.pem');
 
 // Read and import the private key
 const privateKeyContent = readFileSync(privateKeyPath, 'utf8');
