@@ -23,7 +23,7 @@ export async function updateUserProfileById(
     userId: string,
     update: z.infer<typeof updateCurrentUserSchema>
 ) {
-    const user = await User.findByIdAndUpdate(userId, update, { new: true })
+    const user = await User.findByIdAndUpdate(userId, update, { new: true });
     if (!user) {
         return null;
     }
@@ -35,5 +35,4 @@ export async function updateUserProfileById(
         tier: user.tier,
         oauthProvider: user.oauthProvider,
     };
-
 }

@@ -24,12 +24,12 @@ authRouter.get(
     async (req: Request, res: Response) => {
         const user = req.user as
             | {
-                  id: string;
-                  name: string;
-                  email: string;
-                  tier: string;
-                  avatar?: string | null;
-              }
+                id: string;
+                name: string;
+                email: string;
+                tier: string;
+                avatar?: string | null;
+            }
             | undefined;
 
         if (!user) {
@@ -79,12 +79,12 @@ authRouter.get(
     async (req: Request, res: Response) => {
         const user = req.user as
             | {
-                  id: string;
-                  name: string;
-                  email: string;
-                  tier: string;
-                  avatar?: string | null;
-              }
+                id: string;
+                name: string;
+                email: string;
+                tier: string;
+                avatar?: string | null;
+            }
             | undefined;
 
         if (!user) {
@@ -118,6 +118,7 @@ authRouter.get(
 );
 
 authRouter.post('/refresh', async (req: Request, res: Response) => {
+    
     const refreshToken = req.body?.refreshToken;
     if (typeof refreshToken !== 'string' || !refreshToken.trim()) {
         return res.status(401).json({ ok: false, error: 'Missing refresh token' });
