@@ -15,6 +15,11 @@ vi.mock('./cache/redis.js', () => ({
             redisMockState.counters.set(key, nextCount);
             return nextCount;
         }),
+        incrby: vi.fn(async (key: string, amount: number) => {
+            const nextCount = (redisMockState.counters.get(key) ?? 0) + amount;
+            redisMockState.counters.set(key, nextCount);
+            return nextCount;
+        }),
         set: vi.fn(async () => 'OK'),
     },
 }));

@@ -17,6 +17,8 @@ export const userSchema = new Schema(
         isActive: { type: Boolean, default: true },
         tier: { type: String, enum: ['free', 'pro'], default: 'free' },
         roles: { type: [String], default: [] },
+        dailyDecodeCount: { type: Number, default: 0 },
+        lastDecodeReset: { type: Date, default: () => new Date() },
     },
     {
         timestamps: { createdAt: true, updatedAt: true },

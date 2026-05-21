@@ -16,6 +16,8 @@ export async function getUserProfileById(userId: string) {
         avatar: user.avatar,
         tier: user.tier,
         oauthProvider: user.oauthProvider,
+        dailyDecodeCount: user.dailyDecodeCount ?? 0,
+        lastDecodeReset: user.lastDecodeReset ?? new Date(),
     };
 }
 
@@ -34,5 +36,7 @@ export async function updateUserProfileById(
         avatar: user.avatar,
         tier: user.tier,
         oauthProvider: user.oauthProvider,
+        dailyDecodeCount: user.dailyDecodeCount ?? 0,
+        lastDecodeReset: user.lastDecodeReset ?? new Date(),
     };
 }

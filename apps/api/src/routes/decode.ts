@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { decodePipeline, decodeRegistry, registerDecoders } from '@rasbur/decoders';
 import { batchDecodeRequestSchema, decodeRequestSchema, identifyRequestSchema } from '@rasbur/shared';
 import { validate } from '../middleware/validate.js';
+import { usageLimitMiddleware } from '../middleware/usageLimit.js';
 
 export const decodeRouter = Router();
 
@@ -70,7 +71,7 @@ decodeRouter.get('/decoders', (_req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/RateLimitError'
  */
-decodeRouter.post('/decode', validate({ body: decodeRequestSchema }), (req, res) => {
+decodeRouter.post('/decode',usageLimitMiddleware, validate({ body: decodeRequestSchema }), (req, res) => {
     registerDecoders();
     const result = decodePipeline.decode(req.body.input, req.body.options);
 
@@ -110,7 +111,7 @@ decodeRouter.post('/decode', validate({ body: decodeRequestSchema }), (req, res)
  *             schema:
  *               $ref: '#/components/schemas/RateLimitError'
  */
-decodeRouter.post('/identify', validate({ body: identifyRequestSchema }), (req, res) => {
+decodeRouter.post('/identify',usageLimitMiddleware, validate({ body: identifyRequestSchema }), (req, res) => {
     registerDecoders();
     const result = decodePipeline.identify(req.body.input);
     res.status(200).json(result);

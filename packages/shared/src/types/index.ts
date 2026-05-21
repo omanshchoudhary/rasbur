@@ -56,6 +56,8 @@ export interface User {
     tier: 'free' | 'pro';
     createdAt: Date;
     oauthProvider?: string;
+    dailyDecodeCount: number;
+    lastDecodeReset: string | Date;
 }
 
 // Teams
