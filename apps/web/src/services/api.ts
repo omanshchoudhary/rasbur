@@ -4,6 +4,7 @@ import type {
     DecodeResult,
     DecoderInfo,
     IdentifyResult,
+    User,
 } from '@rasbur/shared';
 import { getAccessToken, getRefreshToken, saveAuthTokens, clearAuthTokens } from './auth.js';
 
@@ -94,4 +95,17 @@ export const api = {
             body: JSON.stringify({ inputs }),
         });
     },
+
+    getUserProfile(): Promise<{ ok: boolean; user: User }> {
+        return request<{ ok: boolean; user: User }>('/api/me', {
+            method: 'GET',
+        });
+    },
+
+    updateUserProfile(data: { name?: string; avatar?: string }): Promise<{ ok: boolean; user: User }> {
+        return request<{ ok: boolean; user: User }>('/api/me', {
+            method: 'PATCH',
+            body: JSON.stringify(data),
+        });
+    }
 };

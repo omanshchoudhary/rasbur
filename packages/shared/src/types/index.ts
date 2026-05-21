@@ -55,6 +55,7 @@ export interface User {
     avatar?: string;
     tier: 'free' | 'pro';
     createdAt: Date;
+    oauthProvider?: string;
 }
 
 // Teams
