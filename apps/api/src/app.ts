@@ -14,6 +14,7 @@ import { swaggerSpec } from './config/swagger.js';
 import { decodeRouter } from './routes/decode.js';
 import { authRouter } from './routes/auth.js';
 import { userRouter } from './routes/user.js';
+import { historyRouter } from './routes/history.js';
 
 type RequestWithId = express.Request & {
     requestId: string;
@@ -84,6 +85,7 @@ app.use('/auth', authRouter);
 app.use('/api', rateLimitMiddleware);
 app.use('/api', decodeRouter);
 app.use('/api', userRouter);
+app.use('/api', historyRouter);
 app.use((_req, res) => {
     res.status(404).json({
         error: 'Route not found',

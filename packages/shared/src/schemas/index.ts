@@ -44,3 +44,36 @@ export const updateCurrentUserSchema = z.object({
 }).refine((data) => data.name !== undefined || data.avatar !== undefined, {
     message: 'At least one field (name or avatar) must be provided',
 });
+
+// To Save History In The DB
+export const saveHistorySchema = z.object({
+    originalInput: z.string().min(1),
+    finalOutput: z.string().min(1),
+    steps: z.array(
+        z.object({
+            decoderName: z.string(),
+            confidence: z.number().min(0).max(1),
+            input: z.string(),
+            output: z.string(),
+            explanation: z.string()
+        })
+    )
+
+})
+
+// To create a shared link
+export const shareLinkSchema = z.object({
+    historyId: z.string(),
+    expiresInDays: z.number().int().positive().optional(),
+})
+
+// Compare Request Schema
+export const compareRequestSchema = z.object({
+    inputA: z.string().min(1),
+    inputB: z.string().min(1),
+    options: z.object({
+        maxDepth: z.number().int().min(1).max(10).optional(),
+        strictMode: z.boolean().optional(),
+        forceDecoder: z.string().optional(),
+    }).optional()
+})
