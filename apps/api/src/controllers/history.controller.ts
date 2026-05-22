@@ -63,3 +63,26 @@ export async function getHistory(req: Request, res: Response) {
         entries
     });
 }
+
+export async function getHistoryById(req: Request, res: Response) {
+    const authUser = req.user as { id?: string } | undefined;
+    const userId = authUser?.id;
+    if (!userId) {
+        return res.status(401).json({ error: 'Unauthorized: User ID not found' });
+    }
+
+    const id = req.params.id;
+    try {
+        const historyEntry = await DecodeHistory.findOne({ _id: id, userId });
+
+        if (!historyEntry) {
+            return res.status(404).json({ error: 'History entry not found' });
+        }
+        return res.status(200).json({
+            ok: true,
+            history: historyEntry
+        });
+    } catch (error: any) {
+        return res.status(500).json({ error: error.message || 'Internal server error' });
+    }
+}
