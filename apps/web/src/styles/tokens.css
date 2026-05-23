@@ -1,74 +1,58 @@
 @import 'tailwindcss';
 
 @theme {
-    /* Typography */
-    --font-sans: 'IBM Plex Sans', 'Segoe UI', sans-serif;
-    --font-mono: 'IBM Plex Mono', 'Consolas', monospace;
+    --font-sans: 'Geist', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Consolas', monospace;
 
-    /* Base dark palette */
-    --color-bg-charcoal: #090c12;
-    --color-bg-slate: #0f1520;
-    --color-bg-elevated: #151e2c;
+    --color-bg-charcoal: #0A0A0A;
+    --color-bg-slate: #0E0E0E;
+    --color-bg-elevated: #161616;
 
-    /* Text hierarchy */
-    --color-text-strong: #f5f7fb;
-    --color-text-primary: #dbe2ef;
-    --color-text-secondary: #aeb9cc;
-    --color-text-muted: #8d99ae;
+    --color-text-strong: #ffffff;
+    --color-text-primary: #f3f4f6;
+    --color-text-secondary: #9ca3af;
+    --color-text-muted: #6b7280;
 
-    /* Mixed accents (balanced, non-blue dominant) */
-    --color-accent-emerald: #42cfa2;
-    --color-accent-amber: #e6b85b;
-    --color-accent-rose: #de7a94;
-    --color-accent-violet: #9186e8;
-    --color-accent-blue-trace: #6d88ff;
+    --color-accent-primary: #ffffff;
+    --color-accent-rose: #f43f5e;
 
-    /* Semantic confidence accents */
-    --color-confidence-high: #67d9a7;
-    --color-confidence-mid: #efc66b;
-    --color-confidence-low: #ef8d96;
+    --color-confidence-high: #22c55e;
+    --color-confidence-mid: #eab308;
+    --color-confidence-low: #ef4444;
 
-    /* Glass system */
-    --color-glass-surface: rgba(22, 30, 44, 0.62);
-    --color-glass-surface-strong: rgba(22, 30, 44, 0.76);
-    --color-glass-surface-soft: rgba(24, 33, 48, 0.5);
+    --color-glass-surface: rgba(10, 10, 10, 0.8);
+    --color-glass-surface-strong: rgba(15, 15, 15, 0.9);
+    --color-glass-surface-soft: rgba(8, 8, 8, 0.6);
 
-    --color-glass-border: rgba(255, 255, 255, 0.14);
-    --color-glass-border-soft: rgba(255, 255, 255, 0.08);
+    --color-glass-border: rgba(255, 255, 255, 0.1);
+    --color-glass-border-soft: rgba(255, 255, 255, 0.06);
 
-    /* Subtle mixed glows */
-    --color-glow-emerald: rgba(66, 207, 162, 0.12);
-    --color-glow-amber: rgba(230, 184, 91, 0.1);
-    --color-glow-rose: rgba(222, 122, 148, 0.09);
-    --color-glow-violet: rgba(145, 134, 232, 0.08);
+    --color-glow-soft: rgba(255, 255, 255, 0.03);
 
-    /* Radius + shadows */
     --radius-panel: 1.375rem;
     --radius-card: 1rem;
     --radius-pill: 9999px;
 
     --shadow-glass:
-        0 14px 38px rgba(0, 0, 0, 0.34),
-        inset 0 1px 0 rgba(255, 255, 255, 0.05);
-
-    --shadow-glass-soft:
-        0 10px 28px rgba(0, 0, 0, 0.24),
+        0 14px 38px rgba(0, 0, 0, 0.55),
         inset 0 1px 0 rgba(255, 255, 255, 0.04);
 
-    --shadow-focus: 0 0 0 3px rgba(145, 134, 232, 0.28);
+    --shadow-glass-soft:
+        0 10px 28px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.03);
 
-    /* Motion */
+    --shadow-focus: 0 0 0 3px rgba(255, 255, 255, 0.12);
+
     --motion-fast: 160ms;
     --motion-normal: 220ms;
     --ease-out: cubic-bezier(0.2, 0.75, 0.2, 1);
 }
 
-/* Reusable surface utilities */
 .glass-surface {
     background: linear-gradient(
         180deg,
         var(--color-glass-surface) 0%,
-        rgba(18, 25, 37, 0.74) 100%
+        rgba(8, 8, 8, 0.85) 100%
     );
     border: 1px solid var(--color-glass-border);
     box-shadow: var(--shadow-glass);
@@ -80,7 +64,7 @@
     background: linear-gradient(
         180deg,
         var(--color-glass-surface-soft) 0%,
-        rgba(16, 22, 34, 0.72) 100%
+        rgba(6, 6, 6, 0.75) 100%
     );
     border: 1px solid var(--color-glass-border-soft);
     box-shadow: var(--shadow-glass-soft);
@@ -92,7 +76,7 @@
     background: linear-gradient(
         180deg,
         var(--color-glass-surface-strong) 0%,
-        rgba(20, 28, 42, 0.86) 100%
+        rgba(12, 12, 12, 0.92) 100%
     );
     border: 1px solid var(--color-glass-border);
     box-shadow: var(--shadow-glass);
@@ -100,17 +84,16 @@
     -webkit-backdrop-filter: blur(14px) saturate(125%);
 }
 
-/* Graceful fallback when backdrop blur is unavailable */
 @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
     .glass-surface {
-        background: rgba(18, 25, 37, 0.9);
+        background: rgba(8, 8, 8, 0.95);
     }
 
     .glass-surface--soft {
-        background: rgba(16, 22, 34, 0.9);
+        background: rgba(6, 6, 6, 0.95);
     }
 
     .glass-surface--strong {
-        background: rgba(20, 28, 42, 0.92);
+        background: rgba(12, 12, 12, 0.97);
     }
 }
