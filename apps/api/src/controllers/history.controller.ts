@@ -86,3 +86,56 @@ export async function getHistoryById(req: Request, res: Response) {
         return res.status(500).json({ error: error.message || 'Internal server error' });
     }
 }
+
+export async function deleteHistoryEntry(req: Request, res: Response) {
+    const authUser = req.user as { id?: string } | undefined;
+    const userId = authUser?.id;
+    if (!userId) {
+        return res.status(401).json({ error: 'Unauthorized: User ID not found' });
+    }
+
+    const id = req.params.id;
+
+    try {
+        const deletedEntry = await DecodeHistory.findOneAndDelete({ _id: id, userId });
+        if (!deletedEntry) {
+            return res.status(404).json({ error: 'History entry not found' });
+        }
+        return res.status(200).json({
+            ok: true,
+            message: 'History entry deleted successfully'
+        });
+    } catch (error: any) {
+        return res.status(500).json({ error: error.message || 'Internal server error' });
+    }
+}
+
+export async function clearHistory(req: Request, res: Response) {
+    const authUser = req.user as { id?: string } | undefined;
+    const userId = authUser?.id;
+    if (!userId) {
+        return res.status(401).json({ error: 'Unauthorized: User ID not found' });
+    }
+    try {
+        const query: any = { userId }
+        const search = req.query.search as string | undefined;
+        const encodingType = req.query.encodingType as string | undefined;
+        if (search) {
+            query.$or = [
+                { originalInput: { $regex: search, $options: 'i' } },
+                { finalOutput: { $regex: search, $options: 'i' } }
+            ];
+        }
+        if (encodingType) {
+            query['steps.decoderName'] = encodingType;
+        }
+        const result = await DecodeHistory.deleteMany(query);
+        return res.status(200).json({
+            ok: true,
+            deletedCount: result.deletedCount
+        });
+    } catch (error: any) {
+        return res.status(500).json({ error: error.message || 'Internal server error' });
+    }
+
+}
