@@ -16,6 +16,7 @@ import { authRouter } from './routes/auth.js';
 import { userRouter } from './routes/user.js';
 import { historyRouter } from './routes/history.js';
 import { shareRouter } from './routes/share.js';
+import { compareRouter } from './routes/compare.js';
 
 type RequestWithId = express.Request & {
     requestId: string;
@@ -87,7 +88,8 @@ app.use('/api', rateLimitMiddleware);
 app.use('/api', decodeRouter);
 app.use('/api', userRouter);
 app.use('/api', historyRouter);
-app.use('/api', shareRouter)
+app.use('/api', shareRouter);
+app.use('/api', compareRouter);
 app.use((_req, res) => {
     res.status(404).json({
         error: 'Route not found',
