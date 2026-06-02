@@ -107,5 +107,27 @@ export const api = {
             method: 'PATCH',
             body: JSON.stringify(data),
         });
+    },
+
+    get<T>(path: string): Promise<T> {
+        const fullPath = path.startsWith('/api') ? path : `/api${path.startsWith('/') ? path : `/${path}`}`;
+        return request<T>(fullPath, {
+            method: 'GET',
+        });
+    },
+
+    delete<T>(path: string): Promise<T> {
+        const fullPath = path.startsWith('/api') ? path : `/api${path.startsWith('/') ? path : `/${path}`}`;
+        return request<T>(fullPath, {
+            method: 'DELETE',
+        });
+    },
+
+    post<T>(path: string, body?: any): Promise<T> {
+        const fullPath = path.startsWith('/api') ? path : `/api${path.startsWith('/') ? path : `/${path}`}`;
+        return request<T>(fullPath, {
+            method: 'POST',
+            body: body ? JSON.stringify(body) : undefined,
+        });
     }
 };

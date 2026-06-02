@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import type { DecodeResult, DecodeOptions } from '@rasbur/shared';
 import { api } from '@/services/api.js';
 import DecodePipeline from '@/components/DecodePipeline.js';
 import { useWebSocket } from '@/hooks/useWebSocket.js';
+import { useAuth } from '@/context/AuthContext.js';
+import { Share2 } from 'lucide-react';
 
 type RequestState = 'idle' | 'loading' | 'success' | 'error';
 
@@ -22,13 +25,56 @@ type LiveDecodeResponse = LiveDecodeSuccess | LiveDecodeError;
 const LIVE_DECODE_DELAY_MS = 300;
 
 export default function DecodePage() {
-    const [input, setInput] = useState('');
+    const [searchParams] = useSearchParams();
+    const [input, setInput] = useState(searchParams.get('payload') || '');
     const [result, setResult] = useState<DecodeResult | null>(null);
     const [requestState, setRequestState] = useState<RequestState>('idle');
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [decodeSource, setDecodeSource] = useState<'live' | 'rest' | null>(null);
 
     const { socket, status, isConnected } = useWebSocket();
+    const { isAuthenticated } = useAuth();
+    const [shareState, setShareState] = useState<'idle' | 'sharing' | 'copied' | 'error'>('idle');
+
+    async function handleShareWorkspaceResult() {
+        if (!result) return;
+        setShareState('sharing');
+
+        try {
+            const historyResponse = await api.post<{ ok: boolean; history: { _id: string } }>('/history', {
+                originalInput: result.originalInput,
+                steps: result.steps,
+                finalOutput: result.finalOutput,
+            });
+
+            if (!historyResponse.ok || !historyResponse.history?._id) {
+                throw new Error('Failed to create history entry');
+            }
+
+            const shareResponse = await api.post<{ ok: boolean; share: { slug: string } }>('/share', {
+                historyId: historyResponse.history._id,
+                expiresInDays: 30,
+            });
+
+            if (!shareResponse.ok || !shareResponse.share?.slug) {
+                throw new Error('Failed to create share link');
+            }
+
+            const shareUrl = `${window.location.origin}/s/${shareResponse.share.slug}`;
+            await navigator.clipboard.writeText(shareUrl);
+
+            setShareState('copied');
+            setTimeout(() => {
+                setShareState('idle');
+            }, 2000);
+        } catch (err) {
+            console.error('Error sharing result:', err);
+            setShareState('error');
+            setTimeout(() => {
+                setShareState('idle');
+            }, 3000);
+        }
+    }
 
     async function decodeWithRest(value: string) {
         const decodeResult = await api.decode(value);
@@ -193,9 +239,29 @@ export default function DecodePage() {
                         </div>
 
                         {result && (
-                            <span className="result-badge">
-                                {result.steps.length} {result.steps.length === 1 ? 'step' : 'steps'}
-                            </span>
+                            <div className="result-actions-wrapper">
+                                {isAuthenticated && (
+                                    <button
+                                        type="button"
+                                        onClick={handleShareWorkspaceResult}
+                                        disabled={shareState === 'sharing'}
+                                        className={`share-btn ${shareState === 'copied' ? 'share-btn--copied' : ''} ${shareState === 'error' ? 'share-btn--error' : ''}`}
+                                        title="Share this decode result with a public link"
+                                    >
+                                        <Share2 size={13} />
+                                        {shareState === 'sharing'
+                                            ? 'Sharing...'
+                                            : shareState === 'copied'
+                                              ? 'Copied!'
+                                              : shareState === 'error'
+                                                ? 'Error!'
+                                                : 'Share'}
+                                    </button>
+                                )}
+                                <span className="result-badge">
+                                    {result.steps.length} {result.steps.length === 1 ? 'step' : 'steps'}
+                                </span>
+                            </div>
                         )}
                     </div>
 
