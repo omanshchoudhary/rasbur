@@ -37,6 +37,27 @@ export async function createShareLink(req:Request, res: Response) {
     } catch (error: any) {
         return res.status(500).json({ error: error.message || 'Internal server error' });
     }
+}
 
+export async function getShare(req: Request, res: Response) {
+    const slug = req.params.slug;
 
+    try {
+        const shareEntry = await Share.findOne({ slug }).populate('historyId');
+
+        if (!shareEntry) {
+            return res.status(404).json({ error: 'Shared link not found' });
+        }
+
+        if (shareEntry.expiresAt < new Date()) {
+            return res.status(410).json({ error: 'Share link has expired' });
+        }
+
+        shareEntry.viewCount += 1;
+        await shareEntry.save();
+
+        return res.status(200).json({ ok: true, share: shareEntry });
+    } catch (error: any) {
+        return res.status(500).json({ error: error.message || 'Internal server error' });
+    }
 }
