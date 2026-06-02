@@ -32,6 +32,8 @@ export async function getHistory(req: Request, res: Response) {
     const limit = parseInt(req.query.limit as string) || 10;
     const search = req.query.search as string | undefined;
     const encodingType = req.query.encodingType as string | undefined;
+    const startDate = req.query.startDate as string | undefined;
+    const endDate = req.query.endDate as string | undefined;
     const authUser = req.user as { id?: string } | undefined;
     const userId = authUser?.id;
     if (!userId) {
@@ -46,6 +48,17 @@ export async function getHistory(req: Request, res: Response) {
     }
     if (encodingType) {
         query['steps.decoderName'] = encodingType;
+    }
+    if (startDate || endDate) {
+        query.createdAt = {};
+        if (startDate) {
+            query.createdAt.$gte = new Date(startDate);
+        }
+        if (endDate) {
+            const end = new Date(endDate);
+            end.setUTCHours(23, 59, 59, 999);
+            query.createdAt.$lte = end;
+        }
     }
     const [total, entries] = await Promise.all([
         DecodeHistory.countDocuments(query),
@@ -120,6 +133,8 @@ export async function clearHistory(req: Request, res: Response) {
         const query: any = { userId }
         const search = req.query.search as string | undefined;
         const encodingType = req.query.encodingType as string | undefined;
+        const startDate = req.query.startDate as string | undefined;
+        const endDate = req.query.endDate as string | undefined;
         if (search) {
             query.$or = [
                 { originalInput: { $regex: search, $options: 'i' } },
@@ -128,6 +143,17 @@ export async function clearHistory(req: Request, res: Response) {
         }
         if (encodingType) {
             query['steps.decoderName'] = encodingType;
+        }
+        if (startDate || endDate) {
+            query.createdAt = {};
+            if (startDate) {
+                query.createdAt.$gte = new Date(startDate);
+            }
+            if (endDate) {
+                const end = new Date(endDate);
+                end.setUTCHours(23, 59, 59, 999);
+                query.createdAt.$lte = end;
+            }
         }
         const result = await DecodeHistory.deleteMany(query);
         return res.status(200).json({

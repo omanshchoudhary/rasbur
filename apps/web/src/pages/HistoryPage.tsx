@@ -1,22 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import type { HistoryEntry } from '@rasbur/shared';
 import { api } from '@/services/api.js';
 import { Search, Trash2, RefreshCw, ChevronLeft, ChevronRight, Filter, Calendar, Database, Eye, X, Share2 } from 'lucide-react';
-
-interface DecodeStep {
-    decoderName: string;
-    confidence: number;
-    output: string;
-}
-
-interface HistoryEntry {
-    _id: string;
-    userId: string;
-    originalInput: string;
-    steps: DecodeStep[];
-    finalOutput: string;
-    createdAt: string;
-}
 
 export default function HistoryPage() {
     const navigate = useNavigate();
