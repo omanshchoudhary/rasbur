@@ -288,3 +288,33 @@
     border-color: rgba(248, 113, 113, 0.25);
     color: #fca5a5;
 }
+
+/* Compare Page & Visual Diff Highlights */
+.compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.1rem;
+    align-items: start;
+    width: 100%;
+}
+
+.diff-char-removed {
+    background-color: rgba(239, 68, 68, 0.22);
+    color: #f87171;
+    text-decoration: line-through;
+    border-radius: 2px;
+    padding: 0.1rem 0;
+}
+
+.diff-char-added {
+    background-color: rgba(52, 211, 153, 0.22);
+    color: #34d399;
+    border-radius: 2px;
+    padding: 0.1rem 0;
+}
+
+@media (max-width: 900px) {
+    .compare-grid {
+        grid-template-columns: 1fr;
+    }
+}

@@ -10,6 +10,7 @@ import ProfilePage from './pages/ProfilePage.js';
 import ComingSoonPage from './pages/ComingSoonPage.js';
 import HistoryPage from './pages/HistoryPage.js';
 import SharedResultPage from './pages/SharedResultPage.js';
+import ComparePage from './pages/ComparePage.js';
 
 export default function App() {
     return (
@@ -19,7 +20,7 @@ export default function App() {
                     <Route element={<AppLayout />}>
                         <Route path="/" element={<HomePage />} />
                         <Route path="/decode" element={<DecodePage />} />
-                        <Route path="/compare" element={<ComingSoonPage featureName="Compare Tool" phase="Phase 7" description="Compare two encoded strings side-by-side with character-level differences highlighted." />} />
+                        <Route path="/compare" element={<ComparePage />} />
                         <Route path="/docs" element={<ComingSoonPage featureName="API Documentation" phase="Phase 11" description="Integrate Rasbur directly into your workflows with our fully-featured REST API docs and SDKs." />} />
                         <Route path="/s/:slug" element={<SharedResultPage />} />
                         <Route path="/auth/callback" element={<AuthCallbackPage />} />
