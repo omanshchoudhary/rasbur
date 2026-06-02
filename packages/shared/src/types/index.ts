@@ -103,3 +103,28 @@ export interface ShareData {
     viewCount: number;
     createdAt: string | Date;
 }
+
+export interface DiffPart {
+    value: string;
+    added?: boolean;
+    removed?: boolean;
+}
+
+export interface CompareResponse {
+    ok: boolean;
+    resultA: DecodeResult;
+    resultB: DecodeResult;
+    diff: DiffPart[];
+}
+
+export interface Preset {
+    id: string;
+    label: string;
+    value: string;
+}
+
+export interface DemoStep {
+    name: string;
+    confidence: number;
+    output: string;
+}

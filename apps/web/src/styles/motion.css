@@ -1,45 +1,51 @@
-/* Entry reveal animation */
-.reveal-up {
+
+.reveal-on-scroll {
     opacity: 0;
-    transform: translateY(14px);
-    animation: revealUp 560ms var(--ease-out) forwards;
+    transform: translateY(20px);
+    transition: opacity 700ms cubic-bezier(0.2, 0.75, 0.2, 1), transform 700ms cubic-bezier(0.2, 0.75, 0.2, 1);
+    will-change: opacity, transform;
+}
+
+.reveal-on-scroll.is-visible {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .stagger-1 {
-    animation-delay: 40ms;
+    transition-delay: 80ms;
 }
 
 .stagger-2 {
-    animation-delay: 110ms;
+    transition-delay: 160ms;
 }
 
 .stagger-3 {
-    animation-delay: 180ms;
+    transition-delay: 240ms;
 }
 
 .stagger-4 {
-    animation-delay: 250ms;
+    transition-delay: 320ms;
 }
 
 .stagger-5 {
-    animation-delay: 320ms;
+    transition-delay: 400ms;
 }
 
 .stagger-6 {
-    animation-delay: 390ms;
+    transition-delay: 480ms;
 }
 
-/* Hero decorative orb drift (subtle, non-essential) */
+
 .home-hero::after {
     animation: heroOrbDrift 9s ease-in-out infinite;
 }
 
-/* Result loading pulse */
+
 .result-loading-card .result-empty {
     animation: resultPulse 1.2s ease-in-out infinite;
 }
 
-/* Micro-interactions */
+
 .home-feature-card,
 .home-trust-item,
 .home-cta-primary,
@@ -54,7 +60,7 @@
         box-shadow var(--motion-fast) ease;
 }
 
-/* Lift effects only on desktop-like pointers */
+
 @media (hover: hover) and (pointer: fine) and (min-width: 901px) {
     .glass-surface:hover {
         transform: translateY(-2px);
@@ -77,7 +83,7 @@
     }
 }
 
-/* Keyframes */
+
 @keyframes revealUp {
     from {
         opacity: 0;
@@ -121,11 +127,11 @@
     }
 }
 
-/* Reduced motion safety */
+
 @media (prefers-reduced-motion: reduce) {
-    .reveal-up,
+    .reveal-on-scroll,
     .home-hero::after {
-        animation: none;
+        transition: none;
         opacity: 1;
         transform: none;
     }
