@@ -86,3 +86,20 @@ export interface ApiKey {
     isActive: boolean;
     createdAt: Date;
 }
+
+// History Types
+export interface HistoryEntry extends DecodeResult {
+    _id: string;
+    userId: string;
+    createdAt: string | Date;
+}
+
+// Share Types
+export interface ShareData {
+    _id: string;
+    slug: string;
+    historyId: HistoryEntry | null;
+    expiresAt: string | Date;
+    viewCount: number;
+    createdAt: string | Date;
+}
