@@ -87,6 +87,22 @@ export interface ApiKey {
     createdAt: Date;
 }
 
+export interface CreateApiKeyInput {
+    name: string;
+    permissions: ('decode' | 'history' | 'share' | 'compare')[];
+    expiresAt?: string | Date | null;
+}
+
+export interface CreateApiKeyResult {
+    id: string;
+    name: string;
+    prefix: string;
+    permissions: ('decode' | 'history' | 'share' | 'compare')[];
+    expiresAt: string | Date | null;
+    isActive: boolean;
+    rawKey: string;
+}
+
 // History Types
 export interface HistoryEntry extends DecodeResult {
     _id: string;
