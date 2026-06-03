@@ -9,7 +9,6 @@ import { rateLimitMiddleware } from './middleware/rateLimit.js';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './config/swagger.js';
 
-
 // Routers
 import { decodeRouter } from './routes/decode.js';
 import { authRouter } from './routes/auth.js';
@@ -17,6 +16,7 @@ import { userRouter } from './routes/user.js';
 import { historyRouter } from './routes/history.js';
 import { shareRouter } from './routes/share.js';
 import { compareRouter } from './routes/compare.js';
+import { apiKeyRouter } from './routes/apiKey.js';
 
 type RequestWithId = express.Request & {
     requestId: string;
@@ -90,6 +90,7 @@ app.use('/api', userRouter);
 app.use('/api', historyRouter);
 app.use('/api', shareRouter);
 app.use('/api', compareRouter);
+app.use('/api', apiKeyRouter);
 app.use((_req, res) => {
     res.status(404).json({
         error: 'Route not found',
