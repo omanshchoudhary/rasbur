@@ -27,7 +27,7 @@ export const batchDecodeRequestSchema = z.object({
 // API Key
 export const apiKeySchema = z.object({
     name: z.string().min(1).max(50),
-    permission: z.array(z.enum(['decode', 'history', 'share'])),
+    permissions: z.array(z.enum(['decode', 'history', 'share', 'compare'])),
     expiresAt: z.string().datetime().optional(),
 });
 
