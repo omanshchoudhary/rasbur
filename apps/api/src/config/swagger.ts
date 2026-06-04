@@ -27,7 +27,10 @@ export const swaggerSpec = swaggerJSDoc({
                             enum: ['development', 'production', 'test'],
                             example: 'development',
                         },
-                        requestId: { type: 'string', example: 'fac397c6-b443-4ca5-9350-98b2b62f290d' },
+                        requestId: {
+                            type: 'string',
+                            example: 'fac397c6-b443-4ca5-9350-98b2b62f290d',
+                        },
                     },
                 },
                 DecoderInfo: {
@@ -147,6 +150,34 @@ export const swaggerSpec = swaggerJSDoc({
                         status: { type: 'string', example: 'error' },
                         message: { type: 'string', example: 'Too many requests' },
                         requestId: { type: 'string' },
+                    },
+                },
+                ApiKeyListItem: {
+                    type: 'object',
+                    properties: {
+                        id: { type: 'string', example: '64bf78ab' },
+                        name: { type: 'string', example: 'My API Key' },
+                        prefix: { type: 'string', example: 'rasbur_sk_xx' },
+                        permissions: {
+                            type: 'array',
+                            items: {
+                                type: 'string',
+                                enum: ['decode', 'history', 'share', 'compare'],
+                            },
+                            example: ['decode', 'compare'],
+                        },
+                        expiresAt: {
+                            type: 'string',
+                            format: 'date-time',
+                            nullable: true,
+                            example: '2026-07-03T18:00:00.000Z',
+                        },
+                        isActive: { type: 'boolean', example: true },
+                        createdAt: {
+                            type: 'string',
+                            format: 'date-time',
+                            example: '2026-06-03T18:00:00.000Z',
+                        },
                     },
                 },
             },

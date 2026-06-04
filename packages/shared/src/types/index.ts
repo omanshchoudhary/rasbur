@@ -103,6 +103,16 @@ export interface CreateApiKeyResult {
     rawKey: string;
 }
 
+export interface ApiKeyListItem {
+    id: string;
+    name: string;
+    prefix: string;
+    permissions: ('decode' | 'history' | 'share' | 'compare')[];
+    expiresAt: string | Date | null;
+    isActive: boolean;
+    createdAt: string | Date;
+}
+
 // History Types
 export interface HistoryEntry extends DecodeResult {
     _id: string;
