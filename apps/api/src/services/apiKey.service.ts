@@ -12,7 +12,9 @@ export function hashApiKey(rawKey: string): string {
 
 export async function createApiKeyForUser(userId: string, input: CreateApiKeyInput): Promise<CreateApiKeyResult> {
     const rawKey = generateRawApiKey();
-    const prefix = `rb_${rawKey.slice(-8)}`;
+    // Leading, non-secret slice shown to users so they can identify a key
+    // (namespace "rasbur_sk_" + first 8 chars of the random portion).
+    const prefix = rawKey.slice(0, 18);
 
     const hash = hashApiKey(rawKey);
 
