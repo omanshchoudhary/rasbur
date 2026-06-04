@@ -1,6 +1,11 @@
 import { ApiKey } from '../models/apiKey.js';
 import crypto from 'crypto';
-import type { CreateApiKeyInput, CreateApiKeyResult, ApiKeyListItem } from '@rasbur/shared';
+import type {
+    CreateApiKeyInput,
+    CreateApiKeyResult,
+    ApiKeyListItem,
+    UpdateApiKeyInput,
+} from '@rasbur/shared';
 
 export function generateRawApiKey(): string {
     return `rasbur_sk_${crypto.randomBytes(32).toString('hex')}`;
@@ -67,6 +72,32 @@ export async function revokeApiKeyForUser(
     if (!apiKey) {
         return null;
     }
+    return {
+        id: apiKey._id.toString(),
+        name: apiKey.name,
+        prefix: apiKey.prefix,
+        permissions: apiKey.permissions as ('decode' | 'history' | 'share' | 'compare')[],
+        expiresAt: apiKey.expiresAt ?? null,
+        isActive: apiKey.isActive,
+        createdAt: apiKey.createdAt as Date,
+    };
+}
+
+export async function updateApiKeyForUser(
+    userId: string,
+    keyId: string,
+    input: UpdateApiKeyInput
+): Promise<ApiKeyListItem | null> {
+    const apiKey = await ApiKey.findOneAndUpdate(
+        { _id: keyId, userId },
+        { $set: input },
+        { new: true }
+    );
+
+    if (!apiKey) {
+        return null;
+    }
+
     return {
         id: apiKey._id.toString(),
         name: apiKey.name,

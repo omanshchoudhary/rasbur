@@ -1,8 +1,13 @@
 import { Router } from 'express';
 import { jwtAuthMiddleware } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
-import { apiKeySchema } from '@rasbur/shared';
-import { createApiKey, listApiKeys, deleteApiKey } from '../controllers/apiKey.controller.js';
+import { apiKeySchema, updateApiKeySchema } from '@rasbur/shared';
+import {
+    createApiKey,
+    listApiKeys,
+    deleteApiKey,
+    updateApiKey,
+} from '../controllers/apiKey.controller.js';
 
 export const apiKeyRouter = Router();
 
@@ -44,3 +49,9 @@ apiKeyRouter.post('/keys', jwtAuthMiddleware, validate({ body: apiKeySchema }), 
 apiKeyRouter.get('/keys', jwtAuthMiddleware, listApiKeys);
 
 apiKeyRouter.delete('/keys/:id', jwtAuthMiddleware, deleteApiKey);
+apiKeyRouter.patch(
+    '/keys/:id',
+    jwtAuthMiddleware,
+    validate({ body: updateApiKeySchema }),
+    updateApiKey
+);

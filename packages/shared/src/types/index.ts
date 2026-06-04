@@ -93,6 +93,11 @@ export interface CreateApiKeyInput {
     expiresAt?: string | Date | null;
 }
 
+export interface UpdateApiKeyInput {
+    name?: string;
+    permissions?: ('decode' | 'history' | 'share' | 'compare')[];
+}
+
 export interface CreateApiKeyResult {
     id: string;
     name: string;
