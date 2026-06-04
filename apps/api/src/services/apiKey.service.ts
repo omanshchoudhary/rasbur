@@ -53,3 +53,27 @@ export async function listApiKeysForUser(userId: string): Promise<ApiKeyListItem
         createdAt: apiKey.createdAt as Date,
     }));
 }
+
+export async function revokeApiKeyForUser(
+    userId: string,
+    keyId: string
+): Promise<ApiKeyListItem | null> {
+    const apiKey = await ApiKey.findOneAndUpdate(
+        { _id: keyId, userId },
+        { isActive: false },
+        { new: true }
+    );
+
+    if (!apiKey) {
+        return null;
+    }
+    return {
+        id: apiKey._id.toString(),
+        name: apiKey.name,
+        prefix: apiKey.prefix,
+        permissions: apiKey.permissions as ('decode' | 'history' | 'share' | 'compare')[],
+        expiresAt: apiKey.expiresAt ?? null,
+        isActive: apiKey.isActive,
+        createdAt: apiKey.createdAt as Date,
+    };
+}

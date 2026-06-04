@@ -1,5 +1,10 @@
 import type { Request, Response } from 'express';
-import { createApiKeyForUser, listApiKeysForUser } from '../services/apiKey.service.js';
+import mongoose from 'mongoose';
+import {
+    createApiKeyForUser,
+    listApiKeysForUser,
+    revokeApiKeyForUser,
+} from '../services/apiKey.service.js';
 
 export async function createApiKey(req: Request, res: Response) {
     const authUser = req.user as { id?: string } | undefined;
@@ -24,4 +29,28 @@ export async function listApiKeys(req: Request, res: Response) {
     const apiKeys = await listApiKeysForUser(userId);
 
     return res.status(200).json({ ok: true, apiKeys });
+}
+
+export async function deleteApiKey(req: Request, res: Response) {
+    const authUser = req.user as { id?: string } | undefined;
+    const userId = authUser?.id;
+
+    if (!userId) {
+        return res.status(401).json({ error: 'Unauthorized: User ID not found' });
+    }
+
+    const { id } = req.params;
+    if (!id || typeof id !== 'string' || !mongoose.isValidObjectId(id)) {
+        return res.status(404).json({ error: 'API key not found' });
+    }
+
+    try {
+        const result = await revokeApiKeyForUser(userId, id);
+        if (!result) {
+            return res.status(404).json({ error: 'API key not found' });
+        }
+        return res.status(200).json({ ok: true, message: 'API key revoked successfully' });
+    } catch (error: any) {
+        return res.status(500).json({ error: error.message || 'Internal server error' });
+    }
 }
