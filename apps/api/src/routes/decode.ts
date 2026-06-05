@@ -8,6 +8,7 @@ import {
 import { validate } from '../middleware/validate.js';
 import { usageLimitMiddleware } from '../middleware/usageLimit.js';
 import { authenticate, requirePermission } from '../middleware/authenticate.js';
+import { apiKeyRateLimit } from '../middleware/apiKeyRateLimit.js';
 
 export const decodeRouter = Router();
 
@@ -79,6 +80,7 @@ decodeRouter.get('/decoders', (_req, res) => {
 decodeRouter.post(
     '/decode',
     authenticate,
+    apiKeyRateLimit,
     requirePermission('decode'),
     usageLimitMiddleware,
     validate({ body: decodeRequestSchema }),
@@ -126,6 +128,7 @@ decodeRouter.post(
 decodeRouter.post(
     '/identify',
     authenticate,
+    apiKeyRateLimit,
     requirePermission('decode'),
     usageLimitMiddleware,
     validate({ body: identifyRequestSchema }),
@@ -172,6 +175,7 @@ decodeRouter.post(
 decodeRouter.post(
     '/decode/batch',
     authenticate,
+    apiKeyRateLimit,
     requirePermission('decode'),
     validate({ body: batchDecodeRequestSchema }),
     (req, res) => {

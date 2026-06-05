@@ -7,6 +7,7 @@ import {
     clearHistory,
 } from '../controllers/history.controller.js';
 import { authenticate, requirePermission } from '../middleware/authenticate.js';
+import { apiKeyRateLimit } from '../middleware/apiKeyRateLimit.js';
 import { validate } from '../middleware/validate.js';
 import { saveHistorySchema } from '@rasbur/shared';
 
@@ -15,19 +16,39 @@ export const historyRouter = Router();
 historyRouter.post(
     '/history',
     authenticate,
+    apiKeyRateLimit,
     requirePermission('history'),
     validate({ body: saveHistorySchema }),
     saveHistoryEntry
 );
 
-historyRouter.get('/history', authenticate, requirePermission('history'), getHistory);
+historyRouter.get(
+    '/history',
+    authenticate,
+    apiKeyRateLimit,
+    requirePermission('history'),
+    getHistory
+);
 
-historyRouter.get('/history/:id', authenticate, requirePermission('history'), getHistoryById);
+historyRouter.get(
+    '/history/:id',
+    authenticate,
+    apiKeyRateLimit,
+    requirePermission('history'),
+    getHistoryById
+);
 
-historyRouter.delete('/history', authenticate, requirePermission('history'), clearHistory);
+historyRouter.delete(
+    '/history',
+    authenticate,
+    apiKeyRateLimit,
+    requirePermission('history'),
+    clearHistory
+);
 historyRouter.delete(
     '/history/:id',
     authenticate,
+    apiKeyRateLimit,
     requirePermission('history'),
     deleteHistoryEntry
 );

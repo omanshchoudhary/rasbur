@@ -31,7 +31,6 @@ export async function apiKeyAuthMiddleware(req: Request, res: Response, next: Ne
         };
         req.authType = 'apikey';
 
-        // void recordApiKeyUsage(apiKey._id.toString());
         next();
     } catch {
         return res.status(401).json({ error: 'Invalid API key' });

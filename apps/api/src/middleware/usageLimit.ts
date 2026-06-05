@@ -34,6 +34,11 @@ export async function usageLimitMiddleware(
     res: Response,
     next: NextFunction
 ): Promise<void> {
+    if (req.authType === 'apikey') {
+        next();
+        return;
+    }
+
     try {
         let isAuthenticated = false;
         // If user is already authenticated
