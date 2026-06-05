@@ -9,7 +9,11 @@ const JWT_ALG = 'RS256';
 let privateKey: any;
 let publicKeyPem: string;
 
-async function createToken(userId = 'test-user-1', email = 'test@example.com', tier = 'free'): Promise<string> {
+async function createToken(
+    userId = 'test-user-1',
+    email = 'test@example.com',
+    tier = 'free'
+): Promise<string> {
     return new SignJWT({
         email,
         tier,
@@ -58,21 +62,29 @@ const mockFindChain = {
             _id: 'test-history-1',
             userId: 'test-user-1',
             originalInput: 'SGVsbG8=',
-            steps: [{ decoderName: 'base64', confidence: 1, input: 'SGVsbG8=', output: 'Hello', explanation: 'Decoded Base64' }],
+            steps: [
+                {
+                    decoderName: 'base64',
+                    confidence: 1,
+                    input: 'SGVsbG8=',
+                    output: 'Hello',
+                    explanation: 'Decoded Base64',
+                },
+            ],
             finalOutput: 'Hello',
             createdAt: new Date(),
-        }
+        },
     ]),
 };
 
 vi.mock('./models/history.js', () => {
-    const mockSave = vi.fn().mockImplementation(async function(this: any) {
+    const mockSave = vi.fn().mockImplementation(async function (this: any) {
         this._id = 'test-history-new';
         return this;
     });
     return {
         DecodeHistory: Object.assign(
-            vi.fn().mockImplementation(function(data: any) {
+            vi.fn().mockImplementation(function (data: any) {
                 return {
                     ...data,
                     save: mockSave,
@@ -85,7 +97,15 @@ vi.mock('./models/history.js', () => {
                             _id: 'test-history-1',
                             userId: 'test-user-1',
                             originalInput: 'SGVsbG8=',
-                            steps: [{ decoderName: 'base64', confidence: 1, input: 'SGVsbG8=', output: 'Hello', explanation: 'Decoded Base64' }],
+                            steps: [
+                                {
+                                    decoderName: 'base64',
+                                    confidence: 1,
+                                    input: 'SGVsbG8=',
+                                    output: 'Hello',
+                                    explanation: 'Decoded Base64',
+                                },
+                            ],
                             finalOutput: 'Hello',
                             createdAt: new Date(),
                         };
@@ -98,7 +118,15 @@ vi.mock('./models/history.js', () => {
                             _id: 'test-history-1',
                             userId: 'test-user-1',
                             originalInput: 'SGVsbG8=',
-                            steps: [{ decoderName: 'base64', confidence: 1, input: 'SGVsbG8=', output: 'Hello', explanation: 'Decoded Base64' }],
+                            steps: [
+                                {
+                                    decoderName: 'base64',
+                                    confidence: 1,
+                                    input: 'SGVsbG8=',
+                                    output: 'Hello',
+                                    explanation: 'Decoded Base64',
+                                },
+                            ],
                             finalOutput: 'Hello',
                             createdAt: new Date(),
                         };
@@ -121,7 +149,15 @@ const mockFindOneShareChain = {
                 _id: 'test-history-1',
                 userId: 'test-user-1',
                 originalInput: 'SGVsbG8=',
-                steps: [{ decoderName: 'base64', confidence: 1, input: 'SGVsbG8=', output: 'Hello', explanation: 'Decoded Base64' }],
+                steps: [
+                    {
+                        decoderName: 'base64',
+                        confidence: 1,
+                        input: 'SGVsbG8=',
+                        output: 'Hello',
+                        explanation: 'Decoded Base64',
+                    },
+                ],
                 finalOutput: 'Hello',
                 createdAt: new Date(),
             },
@@ -134,13 +170,13 @@ const mockFindOneShareChain = {
 };
 
 vi.mock('./models/share.js', () => {
-    const mockSave = vi.fn().mockImplementation(async function(this: any) {
+    const mockSave = vi.fn().mockImplementation(async function (this: any) {
         this._id = 'test-share-new';
         return this;
     });
     return {
         Share: Object.assign(
-            vi.fn().mockImplementation(function(data: any) {
+            vi.fn().mockImplementation(function (data: any) {
                 return {
                     ...data,
                     save: mockSave,
@@ -180,7 +216,15 @@ describe('History, Sharing & Comparison Integration Tests', () => {
                 .set('Authorization', `Bearer ${token}`)
                 .send({
                     originalInput: 'SGVsbG8=',
-                    steps: [{ decoderName: 'base64', confidence: 1, input: 'SGVsbG8=', output: 'Hello', explanation: 'Decoded Base64' }],
+                    steps: [
+                        {
+                            decoderName: 'base64',
+                            confidence: 1,
+                            input: 'SGVsbG8=',
+                            output: 'Hello',
+                            explanation: 'Decoded Base64',
+                        },
+                    ],
                     finalOutput: 'Hello',
                 });
 
@@ -191,13 +235,11 @@ describe('History, Sharing & Comparison Integration Tests', () => {
         });
 
         it('returns 401 for unauthorized history save request', async () => {
-            const response = await request(app)
-                .post('/api/history')
-                .send({
-                    originalInput: 'SGVsbG8=',
-                    steps: [],
-                    finalOutput: 'Hello',
-                });
+            const response = await request(app).post('/api/history').send({
+                originalInput: 'SGVsbG8=',
+                steps: [],
+                finalOutput: 'Hello',
+            });
 
             expect(response.status).toBe(401);
         });
@@ -275,8 +317,7 @@ describe('History, Sharing & Comparison Integration Tests', () => {
         });
 
         it('retrieves shared result publicly by slug', async () => {
-            const response = await request(app)
-                .get('/api/share/test-slug-1');
+            const response = await request(app).get('/api/share/test-slug-1');
 
             expect(response.status).toBe(200);
             expect(response.body.ok).toBe(true);
@@ -287,8 +328,10 @@ describe('History, Sharing & Comparison Integration Tests', () => {
 
     describe('Comparison Endpoints', () => {
         it('compares two inputs and returns diff', async () => {
+            const token = await createToken();
             const response = await request(app)
                 .post('/api/compare')
+                .set('Authorization', `Bearer ${token}`)
                 .send({
                     inputA: 'SGVsbG8=',
                     inputB: 'R29vZGJ5ZQ==',
@@ -302,8 +345,10 @@ describe('History, Sharing & Comparison Integration Tests', () => {
         });
 
         it('returns validation error for invalid comparison inputs', async () => {
+            const token = await createToken();
             const response = await request(app)
                 .post('/api/compare')
+                .set('Authorization', `Bearer ${token}`)
                 .send({
                     inputA: '',
                     inputB: '',

@@ -29,16 +29,23 @@ async function tryAuthenticate(req: Request) {
     }
 }
 
-export async function usageLimitMiddleware(req: Request, res: Response, next: NextFunction): Promise<void> {
+export async function usageLimitMiddleware(
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<void> {
     try {
-        // Authenticate the user
         let isAuthenticated = false;
-
-        try {
-            isAuthenticated = await tryAuthenticate(req);
-        } catch (err) {
-            res.status(401).json({ error: 'Invalid token' });
-            return;
+        // If user is already authenticated
+        if (req.user) {
+            isAuthenticated = true;
+        } else {
+            try {
+                isAuthenticated = await tryAuthenticate(req);
+            } catch (err) {
+                res.status(401).json({ error: 'Invalid token' });
+                return;
+            }
         }
 
         // Checking number of inputs given to decode
@@ -71,11 +78,12 @@ export async function usageLimitMiddleware(req: Request, res: Response, next: Ne
             res.setHeader('X-RateLimit-Remaining', remaining.toString());
             res.setHeader('X-RateLimit-Reset', ttl.toString());
 
-            // Limit Exceeded 
+            // Limit Exceeded
             if (count > limit) {
                 res.status(429).json({
                     error: 'Too Many Requests',
-                    message: 'Daily decode limit of 20 requests exceeded. Please sign up or log in for higher limits.',
+                    message:
+                        'Daily decode limit of 20 requests exceeded. Please sign up or log in for higher limits.',
                 });
                 return;
             }
@@ -97,18 +105,26 @@ export async function usageLimitMiddleware(req: Request, res: Response, next: Ne
             const limit = user.tier === 'pro' ? Infinity : 200;
 
             // Lazy Reset Logic
-            const lastReset = user.lastDecodeReset ? new Date(user.lastDecodeReset as any) : new Date(0);
+            const lastReset = user.lastDecodeReset
+                ? new Date(user.lastDecodeReset as any)
+                : new Date(0);
             const needsReset =
                 now.getUTCDate() !== lastReset.getUTCDate() ||
                 now.getUTCMonth() !== lastReset.getUTCMonth() ||
                 now.getUTCFullYear() !== lastReset.getUTCFullYear();
 
-            const currentCount = needsReset ? 0 : (user.dailyDecodeCount || 0);
+            const currentCount = needsReset ? 0 : user.dailyDecodeCount || 0;
             const newCount = currentCount + cost;
 
             const remaining = user.tier === 'pro' ? 999999 : Math.max(0, limit - newCount);
-            res.setHeader('X-RateLimit-Limit', user.tier === 'pro' ? 'unlimited' : limit.toString());
-            res.setHeader('X-RateLimit-Remaining', user.tier === 'pro' ? 'unlimited' : remaining.toString());
+            res.setHeader(
+                'X-RateLimit-Limit',
+                user.tier === 'pro' ? 'unlimited' : limit.toString()
+            );
+            res.setHeader(
+                'X-RateLimit-Remaining',
+                user.tier === 'pro' ? 'unlimited' : remaining.toString()
+            );
             res.setHeader('X-RateLimit-Reset', ttl.toString());
 
             if (user.tier !== 'pro' && newCount > limit) {

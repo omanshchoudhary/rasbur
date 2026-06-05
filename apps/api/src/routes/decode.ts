@@ -1,8 +1,13 @@
 import { Router } from 'express';
 import { decodePipeline, decodeRegistry, registerDecoders } from '@rasbur/decoders';
-import { batchDecodeRequestSchema, decodeRequestSchema, identifyRequestSchema } from '@rasbur/shared';
+import {
+    batchDecodeRequestSchema,
+    decodeRequestSchema,
+    identifyRequestSchema,
+} from '@rasbur/shared';
 import { validate } from '../middleware/validate.js';
 import { usageLimitMiddleware } from '../middleware/usageLimit.js';
+import { authenticate, requirePermission } from '../middleware/authenticate.js';
 
 export const decodeRouter = Router();
 
@@ -71,12 +76,19 @@ decodeRouter.get('/decoders', (_req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/RateLimitError'
  */
-decodeRouter.post('/decode',usageLimitMiddleware, validate({ body: decodeRequestSchema }), (req, res) => {
-    registerDecoders();
-    const result = decodePipeline.decode(req.body.input, req.body.options);
+decodeRouter.post(
+    '/decode',
+    authenticate,
+    requirePermission('decode'),
+    usageLimitMiddleware,
+    validate({ body: decodeRequestSchema }),
+    (req, res) => {
+        registerDecoders();
+        const result = decodePipeline.decode(req.body.input, req.body.options);
 
-    res.status(200).json(result);
-});
+        res.status(200).json(result);
+    }
+);
 
 /**
  * @openapi
@@ -111,11 +123,18 @@ decodeRouter.post('/decode',usageLimitMiddleware, validate({ body: decodeRequest
  *             schema:
  *               $ref: '#/components/schemas/RateLimitError'
  */
-decodeRouter.post('/identify',usageLimitMiddleware, validate({ body: identifyRequestSchema }), (req, res) => {
-    registerDecoders();
-    const result = decodePipeline.identify(req.body.input);
-    res.status(200).json(result);
-});
+decodeRouter.post(
+    '/identify',
+    authenticate,
+    requirePermission('decode'),
+    usageLimitMiddleware,
+    validate({ body: identifyRequestSchema }),
+    (req, res) => {
+        registerDecoders();
+        const result = decodePipeline.identify(req.body.input);
+        res.status(200).json(result);
+    }
+);
 
 /**
  * @openapi
@@ -150,13 +169,19 @@ decodeRouter.post('/identify',usageLimitMiddleware, validate({ body: identifyReq
  *             schema:
  *               $ref: '#/components/schemas/RateLimitError'
  */
-decodeRouter.post('/decode/batch', validate({ body: batchDecodeRequestSchema }), (req, res) => {
-    registerDecoders();
+decodeRouter.post(
+    '/decode/batch',
+    authenticate,
+    requirePermission('decode'),
+    validate({ body: batchDecodeRequestSchema }),
+    (req, res) => {
+        registerDecoders();
 
-    const items = req.body.inputs.map((input: string) => ({
-        input,
-        result: decodePipeline.decode(input),
-    }));
+        const items = req.body.inputs.map((input: string) => ({
+            input,
+            result: decodePipeline.decode(input),
+        }));
 
-    res.status(200).json({ items });
-});
+        res.status(200).json({ items });
+    }
+);

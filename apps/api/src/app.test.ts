@@ -1,6 +1,9 @@
 import request from 'supertest';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { generateKeyPairSync } from 'node:crypto';
+import { importPKCS8, SignJWT } from 'jose';
 import { app } from './app.js';
+import { env } from './config/env.js';
 
 const redisMockState = vi.hoisted(() => ({
     counters: new Map<string, number>(),
@@ -24,6 +27,64 @@ vi.mock('./cache/redis.js', () => ({
     },
 }));
 
+vi.mock('./models/user.js', () => ({
+    User: {
+        findById: vi.fn(async (id: string) => {
+            if (id === 'test-user-1') {
+                return {
+                    id: 'test-user-1',
+                    name: 'Test User',
+                    email: 'test@example.com',
+                    avatar: 'avatar-url',
+                    tier: 'free',
+                    dailyDecodeCount: 5,
+                    lastDecodeReset: new Date(),
+                    save: vi.fn(async () => {}),
+                };
+            }
+            return null;
+        }),
+    },
+}));
+
+const JWT_ALG = 'RS256';
+let privateKey: any;
+let publicKeyPem: string;
+
+async function createToken(
+    userId = 'test-user-1',
+    email = 'test@example.com',
+    tier = 'free'
+): Promise<string> {
+    return new SignJWT({
+        email,
+        tier,
+    })
+        .setProtectedHeader({ alg: JWT_ALG })
+        .setSubject(userId)
+        .setIssuedAt()
+        .setExpirationTime('15m')
+        .sign(privateKey);
+}
+
+beforeAll(async () => {
+    const keyPair = generateKeyPairSync('rsa', {
+        modulusLength: 2048,
+        privateKeyEncoding: {
+            format: 'pem',
+            type: 'pkcs8',
+        },
+        publicKeyEncoding: {
+            format: 'pem',
+            type: 'spki',
+        },
+    });
+
+    privateKey = await importPKCS8(keyPair.privateKey, JWT_ALG);
+    publicKeyPem = keyPair.publicKey;
+    env.JWT_PUBLIC_KEY = publicKeyPem;
+});
+
 describe('API app', () => {
     beforeEach(() => {
         redisMockState.counters.clear();
@@ -40,6 +101,7 @@ describe('API app', () => {
         expect(response.body).toHaveProperty('requestId');
         expect(response.headers).toHaveProperty('x-request-id');
     });
+
     it('returns the list of available decoders from GET /api/decoders', async () => {
         const response = await request(app).get('/api/decoders');
 
@@ -54,10 +116,15 @@ describe('API app', () => {
         expect(response.headers).toHaveProperty('x-ratelimit-remaining');
         expect(response.headers).toHaveProperty('x-ratelimit-reset');
     });
+
     it('decodes a valid input with POST /api/decode', async () => {
-        const response = await request(app).post('/api/decode').send({
-            input: 'SGVsbG8=',
-        });
+        const token = await createToken();
+        const response = await request(app)
+            .post('/api/decode')
+            .set('Authorization', `Bearer ${token}`)
+            .send({
+                input: 'SGVsbG8=',
+            });
 
         expect(response.status).toBe(200);
         expect(response.body.originalInput).toBe('SGVsbG8=');
@@ -71,8 +138,13 @@ describe('API app', () => {
         expect(response.body.steps[0]).toHaveProperty('output');
         expect(response.body.steps[0]).toHaveProperty('explanation');
     });
+
     it('returns validation error for invalid POST /api/decode body', async () => {
-        const response = await request(app).post('/api/decode').send({});
+        const token = await createToken();
+        const response = await request(app)
+            .post('/api/decode')
+            .set('Authorization', `Bearer ${token}`)
+            .send({});
 
         expect(response.status).toBe(400);
         expect(response.body.status).toBe('error');
@@ -83,9 +155,13 @@ describe('API app', () => {
     });
 
     it('identifies likely encoding formats with POST /api/identify', async () => {
-        const response = await request(app).post('/api/identify').send({
-            input: 'SGVsbG8=',
-        });
+        const token = await createToken();
+        const response = await request(app)
+            .post('/api/identify')
+            .set('Authorization', `Bearer ${token}`)
+            .send({
+                input: 'SGVsbG8=',
+            });
 
         expect(response.status).toBe(200);
         expect(response.body.input).toBe('SGVsbG8=');
@@ -98,8 +174,10 @@ describe('API app', () => {
     });
 
     it('batch decodes multiple inputs with POST /api/decode/batch', async () => {
+        const token = await createToken();
         const response = await request(app)
             .post('/api/decode/batch')
+            .set('Authorization', `Bearer ${token}`)
             .send({
                 inputs: ['SGVsbG8=', '48656c6c6f'],
             });
@@ -116,9 +194,13 @@ describe('API app', () => {
     });
 
     it('returns validation error for empty batch decode request', async () => {
-        const response = await request(app).post('/api/decode/batch').send({
-            inputs: [],
-        });
+        const token = await createToken();
+        const response = await request(app)
+            .post('/api/decode/batch')
+            .set('Authorization', `Bearer ${token}`)
+            .send({
+                inputs: [],
+            });
 
         expect(response.status).toBe(400);
         expect(response.body.status).toBe('error');
