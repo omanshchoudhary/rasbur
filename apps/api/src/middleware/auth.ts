@@ -24,6 +24,7 @@ export async function jwtAuthMiddleware(req: Request, res: Response, next: NextF
             email: payload.email,
             tier: payload.tier,
         };
+        req.authType = 'jwt';
         next();
     } catch {
         return res.status(401).json({ error: 'Invalid token' });
