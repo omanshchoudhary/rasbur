@@ -9,7 +9,11 @@ const JWT_ALG = 'RS256';
 let privateKey: any;
 let publicKeyPem: string;
 
-async function createToken(userId = 'test-user-1', email = 'test@example.com', tier = 'free'): Promise<string> {
+async function createToken(
+    userId = 'test-user-1',
+    email = 'test@example.com',
+    tier = 'free'
+): Promise<string> {
     return new SignJWT({
         email,
         tier,
@@ -47,6 +51,26 @@ vi.mock('./models/user.js', () => ({
                 };
             }
             return null;
+        }),
+        findOne: vi.fn(async (query: any) => {
+            if (query.email === 'dev@example.com') {
+                return {
+                    id: 'dev-user-id',
+                    name: 'Developer User',
+                    email: 'dev@example.com',
+                    avatar: null,
+                    tier: 'free',
+                    oauthProvider: 'google',
+                    oauthId: 'dev-oauth-id',
+                };
+            }
+            return null;
+        }),
+        create: vi.fn(async (data: any) => {
+            return {
+                id: 'dev-user-id',
+                ...data,
+            };
         }),
     },
 }));
@@ -177,6 +201,30 @@ describe('Authentication Integration Tests', () => {
 
             expect(response.status).toBe(200);
             expect(response.body.ok).toBe(true);
+        });
+    });
+
+    describe('POST /auth/dev-login (Developer Bypass)', () => {
+        it('returns 200 and issues tokens when dev-login is hit in development/test mode', async () => {
+            const response = await request(app).post('/auth/dev-login').send();
+
+            expect(response.status).toBe(200);
+            expect(response.body.ok).toBe(true);
+            expect(response.body.accessToken).toBeDefined();
+            expect(response.body.refreshToken).toBeDefined();
+            expect(response.body.user.email).toBe('dev@example.com');
+        });
+
+        it('returns 403 when NODE_ENV is production', async () => {
+            const originalNodeEnv = process.env.NODE_ENV;
+            process.env.NODE_ENV = 'production';
+            try {
+                const response = await request(app).post('/auth/dev-login').send();
+                expect(response.status).toBe(403);
+                expect(response.body.error).toBe('Not allowed in production');
+            } finally {
+                process.env.NODE_ENV = originalNodeEnv;
+            }
         });
     });
 });

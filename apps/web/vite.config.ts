@@ -32,6 +32,28 @@ export default defineConfig(({ mode }) => {
                     target: proxyTarget,
                     changeOrigin: true,
                 },
+                // Auth endpoints live under /auth on the backend. Proxy the specific
+                // API paths but NOT /auth/callback, which is a client-side SPA route.
+                '/auth/google': {
+                    target: proxyTarget,
+                    changeOrigin: true,
+                },
+                '/auth/github': {
+                    target: proxyTarget,
+                    changeOrigin: true,
+                },
+                '/auth/refresh': {
+                    target: proxyTarget,
+                    changeOrigin: true,
+                },
+                '/auth/logout': {
+                    target: proxyTarget,
+                    changeOrigin: true,
+                },
+                '/auth/dev-login': {
+                    target: proxyTarget,
+                    changeOrigin: true,
+                },
             },
         },
     };

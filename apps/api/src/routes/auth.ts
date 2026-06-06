@@ -2,6 +2,7 @@ import { Router, type Request, type Response } from 'express';
 import passport from 'passport';
 import { issueAuthTokens } from '../auth/tokens.js';
 import { logoutUser, rotateRefreshToken, storeRefreshSession } from '../auth/refresh.service.js';
+import { User } from '../models/user.js';
 
 export const authRouter = Router();
 
@@ -24,12 +25,12 @@ authRouter.get(
     async (req: Request, res: Response) => {
         const user = req.user as
             | {
-                id: string;
-                name: string;
-                email: string;
-                tier: string;
-                avatar?: string | null;
-            }
+                  id: string;
+                  name: string;
+                  email: string;
+                  tier: string;
+                  avatar?: string | null;
+              }
             | undefined;
 
         if (!user) {
@@ -79,12 +80,12 @@ authRouter.get(
     async (req: Request, res: Response) => {
         const user = req.user as
             | {
-                id: string;
-                name: string;
-                email: string;
-                tier: string;
-                avatar?: string | null;
-            }
+                  id: string;
+                  name: string;
+                  email: string;
+                  tier: string;
+                  avatar?: string | null;
+              }
             | undefined;
 
         if (!user) {
@@ -117,8 +118,43 @@ authRouter.get(
     }
 );
 
+authRouter.post('/dev-login', async (req: Request, res: Response) => {
+    if (process.env.NODE_ENV === 'production') {
+        return res.status(403).json({ error: 'Not allowed in production' });
+    }
+
+    let user = await User.findOne({ email: 'dev@example.com' });
+    if (!user) {
+        user = await User.create({
+            name: 'Developer User',
+            email: 'dev@example.com',
+            oauthProvider: 'google',
+            oauthId: 'dev-oauth-id',
+            tier: 'free',
+        });
+    }
+
+    const tokens = await issueAuthTokens({
+        id: user.id,
+        email: user.email,
+        tier: user.tier,
+    });
+    await storeRefreshSession(user.id, tokens.refreshJti, tokens.refreshExpiresAt);
+
+    return res.status(200).json({
+        ok: true,
+        user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            tier: user.tier,
+            avatar: user.avatar,
+        },
+        ...tokens,
+    });
+});
+
 authRouter.post('/refresh', async (req: Request, res: Response) => {
-    
     const refreshToken = req.body?.refreshToken;
     if (typeof refreshToken !== 'string' || !refreshToken.trim()) {
         return res.status(401).json({ ok: false, error: 'Missing refresh token' });

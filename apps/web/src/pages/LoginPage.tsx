@@ -1,11 +1,30 @@
-import { getGoogleLoginUrl, getGithubLoginUrl } from "@/services/auth.js";
+import { getGoogleLoginUrl, getGithubLoginUrl, saveAuthTokens } from '@/services/auth.js';
 
 export default function LoginPage() {
-    const handleLogin = (provider: "google" | "github") => {
-        if (provider === "google") {
+    const handleLogin = (provider: 'google' | 'github') => {
+        if (provider === 'google') {
             window.location.href = getGoogleLoginUrl();
         } else {
             window.location.href = getGithubLoginUrl();
+        }
+    };
+
+    const handleDevLogin = async () => {
+        try {
+            const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '')
+                .trim()
+                .replace(/\/$/, '');
+            const res = await fetch(`${API_BASE_URL}/auth/dev-login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+            });
+            const data = await res.json();
+            if (data.ok && data.accessToken && data.refreshToken) {
+                saveAuthTokens(data.accessToken, data.refreshToken);
+                window.location.href = '/decode';
+            }
+        } catch (err) {
+            console.error(err);
         }
     };
 
@@ -16,13 +35,14 @@ export default function LoginPage() {
             <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent-teal/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2 pointer-events-none" />
 
             <div className="w-full max-w-md bg-surface-900/60 border border-white/5 backdrop-blur-xl rounded-panel p-8 shadow-panel relative z-10 text-center">
-                
                 {/* Brand Logo & Header */}
                 <div className="mb-8">
                     <span className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-accent-blue to-accent-teal text-surface-950 text-3xl font-black shadow-lg mb-4 select-none">
                         R
                     </span>
-                    <h1 className="text-3xl font-extrabold tracking-tight text-text-50">Welcome to Rasbur</h1>
+                    <h1 className="text-3xl font-extrabold tracking-tight text-text-50">
+                        Welcome to Rasbur
+                    </h1>
                     <p className="text-text-300 text-sm mt-2">
                         Sign in to access your decoder pipeline, history, and developer tools.
                     </p>
@@ -33,7 +53,7 @@ export default function LoginPage() {
                 {/* Login Strategy Buttons */}
                 <div className="space-y-4">
                     <button
-                        onClick={() => handleLogin("google")}
+                        onClick={() => handleLogin('google')}
                         className="w-full flex items-center justify-center gap-3 px-6 py-3.5 bg-white text-surface-950 font-bold rounded-xl shadow-md hover:bg-gray-100 hover:scale-[1.01] active:scale-[0.99] transition-all duration-150 cursor-pointer"
                     >
                         {/* Google Icon SVG */}
@@ -59,15 +79,48 @@ export default function LoginPage() {
                     </button>
 
                     <button
-                        onClick={() => handleLogin("github")}
+                        onClick={() => handleLogin('github')}
                         className="w-full flex items-center justify-center gap-3 px-6 py-3.5 bg-surface-950 border border-white/10 hover:border-white/20 text-text-50 font-bold rounded-xl shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all duration-150 cursor-pointer"
                     >
-                        {/* GitHub Icon SVG */}
                         <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                            <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.579.688.481C19.137 20.164 22 16.418 22 12c0-5.523-4.477-10-10-10z" />
+                            <path
+                                fillRule="evenodd"
+                                clipRule="evenodd"
+                                d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.579.688.481C19.137 20.164 22 16.418 22 12c0-5.523-4.477-10-10-10z"
+                            />
                         </svg>
                         Continue with GitHub
                     </button>
+
+                    {import.meta.env.DEV && (
+                        <>
+                            <div className="flex items-center my-4">
+                                <div className="flex-grow border-t border-white/5"></div>
+                                <span className="mx-3 text-xs text-text-300/40 uppercase tracking-wider font-semibold">
+                                    Development Only
+                                </span>
+                                <div className="flex-grow border-t border-white/5"></div>
+                            </div>
+                            <button
+                                onClick={handleDevLogin}
+                                className="w-full flex items-center justify-center gap-3 px-6 py-3.5 bg-gradient-to-tr from-accent-blue/20 to-accent-teal/20 border border-accent-blue/30 hover:border-accent-blue/50 text-accent-blue font-bold rounded-xl shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all duration-150 cursor-pointer"
+                            >
+                                <svg
+                                    className="w-5 h-5"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                >
+                                    <polyline points="16 18 22 12 16 6"></polyline>
+                                    <polyline points="8 6 2 12 8 18"></polyline>
+                                </svg>
+                                Bypass Login (Dev Mode)
+                            </button>
+                        </>
+                    )}
                 </div>
 
                 {/* Footer terms info */}
