@@ -7,6 +7,7 @@ import {
     listApiKeys,
     deleteApiKey,
     updateApiKey,
+    getApiKeyUsage,
 } from '../controllers/apiKey.controller.js';
 
 export const apiKeyRouter = Router();
@@ -55,3 +56,5 @@ apiKeyRouter.patch(
     validate({ body: updateApiKeySchema }),
     updateApiKey
 );
+
+apiKeyRouter.get('/keys/:id/usage', jwtAuthMiddleware, getApiKeyUsage);

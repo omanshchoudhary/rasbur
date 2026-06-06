@@ -159,3 +159,13 @@ export interface DemoStep {
     confidence: number;
     output: string;
 }
+
+export interface ApiKeyUsage {
+    keyId: string;
+    usageCount: number; // lifetime total (from Mongo)
+    today: number; // today's count (from Redis)
+    limit: number;
+    remaining: number;
+    resetSeconds: number; // seconds until the daily count resets
+    lastUsedAt: string | Date | null;
+}

@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import {
     createApiKeyForUser,
+    getApiKeyUsageForUser,
     listApiKeysForUser,
     revokeApiKeyForUser,
     updateApiKeyForUser,
@@ -78,4 +79,19 @@ export async function updateApiKey(req: Request, res: Response) {
     } catch (error: any) {
         return res.status(500).json({ error: error.message || 'Internal server error' });
     }
+}
+
+export async function getApiKeyUsage(req: Request, res: Response) {
+    const authUser = req.user as { id?: string } | undefined;
+    const userId = authUser?.id;
+    if (!userId) return res.status(401).json({ error: 'Unauthorized: User ID not found' });
+
+    const { id } = req.params;
+    if (!id || typeof id !== 'string' || !mongoose.isValidObjectId(id)) {
+        return res.status(404).json({ error: 'API key not found' });
+    }
+
+    const usage = await getApiKeyUsageForUser(userId, id);
+    if (!usage) return res.status(404).json({ error: 'API key not found' });
+    return res.status(200).json({ ok: true, usage });
 }

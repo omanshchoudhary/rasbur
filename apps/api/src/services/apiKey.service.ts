@@ -5,8 +5,10 @@ import type {
     CreateApiKeyResult,
     ApiKeyListItem,
     UpdateApiKeyInput,
+    ApiKeyUsage,
 } from '@rasbur/shared';
 import { logger } from '../logger.js';
+import { redis } from '../cache/redis.js';
 
 export function generateRawApiKey(): string {
     return `rasbur_sk_${crypto.randomBytes(32).toString('hex')}`;
@@ -122,4 +124,30 @@ export async function recordApiKeyUsage(keyId: string): Promise<void> {
     } catch (error) {
         logger.error({ err: error, keyId }, 'Failed to record API key usage');
     }
+}
+
+export async function getApiKeyUsageForUser(
+    userId: string,
+    keyId: string
+): Promise<ApiKeyUsage | null> {
+    const apiKey = await ApiKey.findOne({ _id: keyId, userId });
+
+    if (!apiKey) return null;
+
+    const yyyymmdd = new Date().toISOString().split('T')[0];
+    const today = Number((await redis.get(`api-key:usage:${keyId}:${yyyymmdd}`)) ?? 0);
+
+    const midnight = new Date();
+    midnight.setUTCHours(24, 0, 0, 0);
+    const resetSeconds = Math.max(0, Math.floor((midnight.getTime() - Date.now()) / 1000));
+
+    return {
+        keyId: apiKey.id,
+        usageCount: apiKey.usageCount ?? 0,
+        today,
+        limit: apiKey.rateLimit,
+        remaining: Math.max(0, apiKey.rateLimit - today),
+        resetSeconds,
+        lastUsedAt: apiKey.lastUsedAt ?? null,
+    };
 }
