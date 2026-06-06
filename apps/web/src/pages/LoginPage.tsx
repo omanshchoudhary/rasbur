@@ -37,7 +37,7 @@ export default function LoginPage() {
             <div className="w-full max-w-md bg-surface-900/60 border border-white/5 backdrop-blur-xl rounded-panel p-8 shadow-panel relative z-10 text-center">
                 {/* Brand Logo & Header */}
                 <div className="mb-8">
-                    <span className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-accent-blue to-accent-teal text-surface-950 text-3xl font-black shadow-lg mb-4 select-none">
+                    <span className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-linear-to-tr from-accent-blue to-accent-teal text-surface-950 text-3xl font-black shadow-lg mb-4 select-none">
                         R
                     </span>
                     <h1 className="text-3xl font-extrabold tracking-tight text-text-50">
@@ -103,7 +103,7 @@ export default function LoginPage() {
                             </div>
                             <button
                                 onClick={handleDevLogin}
-                                className="w-full flex items-center justify-center gap-3 px-6 py-3.5 bg-gradient-to-tr from-accent-blue/20 to-accent-teal/20 border border-accent-blue/30 hover:border-accent-blue/50 text-accent-blue font-bold rounded-xl shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all duration-150 cursor-pointer"
+                                className="w-full flex items-center justify-center gap-3 px-6 py-3.5 bg-linear-to-tr from-accent-blue/20 to-accent-teal/20 border border-accent-blue/30 hover:border-accent-blue/50 text-accent-blue font-bold rounded-xl shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all duration-150 cursor-pointer"
                             >
                                 <svg
                                     className="w-5 h-5"

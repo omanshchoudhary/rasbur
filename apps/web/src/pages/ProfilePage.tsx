@@ -7,7 +7,9 @@ export default function ProfilePage() {
     const [name, setName] = useState('');
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-    const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+    const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(
+        null
+    );
 
     useEffect(() => {
         let isMounted = true;
@@ -23,7 +25,8 @@ export default function ProfilePage() {
                 if (isMounted) {
                     setMessage({
                         type: 'error',
-                        text: err instanceof Error ? err.message : 'Failed to load profile details.',
+                        text:
+                            err instanceof Error ? err.message : 'Failed to load profile details.',
                     });
                 }
             } finally {
@@ -94,7 +97,12 @@ export default function ProfilePage() {
     }
 
     const initials = name
-        ? name.split(' ').map((n) => n[0]).slice(0, 2).join('').toUpperCase()
+        ? name
+              .split(' ')
+              .map((n) => n[0])
+              .slice(0, 2)
+              .join('')
+              .toUpperCase()
         : 'U';
 
     const isPro = user?.tier === 'pro';
@@ -104,7 +112,9 @@ export default function ProfilePage() {
             {/* Header Title */}
             <div className="mb-8">
                 <h1 className="text-3xl font-extrabold tracking-tight text-text-50">Settings</h1>
-                <p className="text-text-300 mt-1">Manage your account credentials and personal preferences.</p>
+                <p className="text-text-300 mt-1">
+                    Manage your account credentials and personal preferences.
+                </p>
             </div>
 
             {/* Profile Card */}
@@ -116,7 +126,7 @@ export default function ProfilePage() {
                 <div className="flex flex-col sm:flex-row items-center gap-6 mb-8 relative z-10">
                     <div className="relative group">
                         {/* Glow Gradient Outline Ring */}
-                        <div className="absolute -inset-1 bg-gradient-to-tr from-accent-blue via-accent-teal to-accent-blue rounded-full opacity-75 group-hover:opacity-100 transition duration-500 blur-[2px]" />
+                        <div className="absolute -inset-1 bg-linear-to-tr from-accent-blue via-accent-teal to-accent-blue rounded-full opacity-75 group-hover:opacity-100 transition duration-500 blur-[2px]" />
                         {user?.avatar ? (
                             <img
                                 src={user.avatar}
@@ -150,7 +160,9 @@ export default function ProfilePage() {
                         {user?.oauthProvider && (
                             <p className="text-xs text-text-300/60 mt-2 font-mono flex items-center justify-center sm:justify-start gap-1">
                                 <span className="w-1.5 h-1.5 rounded-full bg-accent-teal inline-block animate-pulse" />
-                                Signed in via {user.oauthProvider.charAt(0).toUpperCase() + user.oauthProvider.slice(1)}
+                                Signed in via{' '}
+                                {user.oauthProvider.charAt(0).toUpperCase() +
+                                    user.oauthProvider.slice(1)}
                             </p>
                         )}
                     </div>
@@ -161,18 +173,39 @@ export default function ProfilePage() {
                 {/* Notifications & Status Banner */}
                 {message && (
                     <div
-                        className={`mb-6 p-4 rounded-xl text-sm border flex items-center gap-3 transition-all duration-300 ${message.type === 'success'
+                        className={`mb-6 p-4 rounded-xl text-sm border flex items-center gap-3 transition-all duration-300 ${
+                            message.type === 'success'
                                 ? 'bg-accent-teal/10 border-accent-teal/20 text-accent-teal'
                                 : 'bg-danger-400/10 border-danger-400/20 text-danger-400'
-                            }`}
+                        }`}
                     >
                         {message.type === 'success' ? (
-                            <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            <svg
+                                className="w-5 h-5 flex-shrink-0"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                />
                             </svg>
                         ) : (
-                            <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            <svg
+                                className="w-5 h-5 flex-shrink-0"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                                />
                             </svg>
                         )}
                         <span>{message.text}</span>
@@ -182,7 +215,10 @@ export default function ProfilePage() {
                 {/* Form Settings */}
                 <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
                     <div className="space-y-2">
-                        <label htmlFor="email" className="block text-sm font-semibold text-text-300">
+                        <label
+                            htmlFor="email"
+                            className="block text-sm font-semibold text-text-300"
+                        >
                             Email Address (Read-only)
                         </label>
                         <input
@@ -192,7 +228,9 @@ export default function ProfilePage() {
                             disabled
                             className="w-full bg-surface-950/80 border border-white/5 rounded-xl px-4 py-3 text-text-300/50 cursor-not-allowed focus:outline-none"
                         />
-                        <p className="text-xs text-text-300/40 font-medium">To modify your registered email address, please contact support.</p>
+                        <p className="text-xs text-text-300/40 font-medium">
+                            To modify your registered email address, please contact support.
+                        </p>
                     </div>
 
                     <div className="space-y-2">
@@ -219,9 +257,24 @@ export default function ProfilePage() {
                         >
                             {saving ? (
                                 <>
-                                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-surface-950" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                    <svg
+                                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-surface-950"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <circle
+                                            className="opacity-25"
+                                            cx="12"
+                                            cy="12"
+                                            r="10"
+                                            stroke="currentColor"
+                                            strokeWidth="4"
+                                        />
+                                        <path
+                                            className="opacity-75"
+                                            fill="currentColor"
+                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                        />
                                     </svg>
                                     Saving...
                                 </>
