@@ -155,9 +155,9 @@ export const swaggerSpec = swaggerJSDoc({
                 ApiKeyListItem: {
                     type: 'object',
                     properties: {
-                        id: { type: 'string', example: '64bf78ab' },
+                        id: { type: 'string', example: '64bf78ab12cd34ef56ab7890' },
                         name: { type: 'string', example: 'My API Key' },
-                        prefix: { type: 'string', example: 'rasbur_sk_xx' },
+                        prefix: { type: 'string', example: 'rasbur_sk_1a2b3c4d' },
                         permissions: {
                             type: 'array',
                             items: {
@@ -180,8 +180,57 @@ export const swaggerSpec = swaggerJSDoc({
                         },
                     },
                 },
+                ApiKeyUsage: {
+                    type: 'object',
+                    properties: {
+                        keyId: { type: 'string', example: '64bf78ab12cd34ef56ab7890' },
+                        usageCount: {
+                            type: 'integer',
+                            example: 1543,
+                            description: 'Lifetime request count',
+                        },
+                        today: {
+                            type: 'integer',
+                            example: 27,
+                            description: "Requests made in today's window",
+                        },
+                        limit: {
+                            type: 'integer',
+                            example: 1000,
+                            description: 'Daily request limit for the key',
+                        },
+                        remaining: { type: 'integer', example: 973 },
+                        resetSeconds: {
+                            type: 'integer',
+                            example: 43200,
+                            description: 'Seconds until the daily window resets',
+                        },
+                        lastUsedAt: {
+                            type: 'string',
+                            format: 'date-time',
+                            nullable: true,
+                            example: '2026-06-06T09:15:00.000Z',
+                        },
+                    },
+                },
+            },
+            securitySchemes: {
+                BearerAuth: {
+                    type: 'http',
+                    scheme: 'bearer',
+                    bearerFormat: 'JWT',
+                    description:
+                        'JWT access token issued on web sign-in. Send as `Authorization: Bearer <token>`.',
+                },
+                ApiKeyAuth: {
+                    type: 'apiKey',
+                    in: 'header',
+                    name: 'X-API-Key',
+                    description: 'Programmatic access key. Send as `X-API-Key: rasbur_sk_...`.',
+                },
             },
         },
+        security: [{ BearerAuth: [] }, { ApiKeyAuth: [] }],
     },
     apis: ['./src/app.ts', './src/routes/*.ts'],
 });
