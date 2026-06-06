@@ -95,6 +95,7 @@ vi.mock('./models/apiKey.js', () => {
             find: vi.fn(() => ({
                 sort: vi.fn().mockImplementation(async () => mockApiKeys),
             })),
+            updateOne: vi.fn(async () => ({ nModified: 1, acknowledged: true })),
             findOne: vi.fn(async (query: any) => {
                 if (query.keyHash === 'valid-hash') {
                     return {

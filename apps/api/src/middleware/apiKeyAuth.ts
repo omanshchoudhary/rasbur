@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
-import { hashApiKey } from '../services/apiKey.service.js';
+import { hashApiKey, recordApiKeyUsage } from '../services/apiKey.service.js';
 import { ApiKey } from '../models/apiKey.js';
 import { User } from '../models/user.js';
 
@@ -30,7 +30,7 @@ export async function apiKeyAuthMiddleware(req: Request, res: Response, next: Ne
             rateLimit: apiKey.rateLimit,
         };
         req.authType = 'apikey';
-
+        void recordApiKeyUsage(apiKey._id.toString());
         next();
     } catch {
         return res.status(401).json({ error: 'Invalid API key' });

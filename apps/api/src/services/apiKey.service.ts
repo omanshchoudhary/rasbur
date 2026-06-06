@@ -6,6 +6,7 @@ import type {
     ApiKeyListItem,
     UpdateApiKeyInput,
 } from '@rasbur/shared';
+import { logger } from '../logger.js';
 
 export function generateRawApiKey(): string {
     return `rasbur_sk_${crypto.randomBytes(32).toString('hex')}`;
@@ -107,4 +108,18 @@ export async function updateApiKeyForUser(
         isActive: apiKey.isActive,
         createdAt: apiKey.createdAt as Date,
     };
+}
+
+export async function recordApiKeyUsage(keyId: string): Promise<void> {
+    try {
+        await ApiKey.updateOne(
+            { _id: keyId },
+            {
+                $inc: { usageCount: 1 },
+                $set: { lastUsedAt: new Date() },
+            }
+        );
+    } catch (error) {
+        logger.error({ err: error, keyId }, 'Failed to record API key usage');
+    }
 }

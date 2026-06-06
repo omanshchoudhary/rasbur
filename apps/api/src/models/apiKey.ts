@@ -40,6 +40,11 @@ const apiKeySchema = new Schema(
             min: 1,
         },
 
+        usageCount: {
+            type: Number,
+            default: 0,
+        },
+
         expiresAt: {
             type: Date,
             default: null,
