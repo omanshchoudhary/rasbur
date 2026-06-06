@@ -32,6 +32,13 @@ export default defineConfig(({ mode }) => {
                     target: proxyTarget,
                     changeOrigin: true,
                 },
+                // Proxy Socket.IO traffic to the API in dev so the WebSocket connection
+                // uses window.location.origin (and the JWT cookie / CORS behave correctly).
+                '/socket.io': {
+                    target: proxyTarget,
+                    changeOrigin: true,
+                    ws: true,
+                },
                 // Auth endpoints live under /auth on the backend. Proxy the specific
                 // API paths but NOT /auth/callback, which is a client-side SPA route.
                 '/auth/google': {
