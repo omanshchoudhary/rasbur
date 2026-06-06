@@ -1,21 +1,14 @@
 import { randomUUID } from 'crypto';
-import { readFileSync } from 'fs';
-import { join } from 'path';
-import { fileURLToPath } from 'url';
 import { importPKCS8, SignJWT } from 'jose';
+import { env } from '../config/env.js';
 
 const JWT_ALG = 'RS256';
 const ACCESS_TOKEN_TTL = '15m';
 const REFRESH_TOKEN_TTL = '30d';
 const REFRESH_TOKEN_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
-// Resolve path to the root private.pem file
-const __dirname = fileURLToPath(new URL('.', import.meta.url));
-const privateKeyPath = join(__dirname, '../../../../private.pem');
-
-// Read and import the private key
-const privateKeyContent = readFileSync(privateKeyPath, 'utf8');
-const privateKey = await importPKCS8(privateKeyContent, JWT_ALG);
+// Load the signing key from the environment (set locally in .env, in the platform for prod).
+const privateKey = await importPKCS8(env.JWT_PRIVATE_KEY.replace(/\\n/g, '\n'), JWT_ALG);
 
 type TokenUser = {
     id: string;
