@@ -11,6 +11,8 @@ import ComingSoonPage from './pages/ComingSoonPage.js';
 import HistoryPage from './pages/HistoryPage.js';
 import SharedResultPage from './pages/SharedResultPage.js';
 import ComparePage from './pages/ComparePage.js';
+import ApiKeysPage from './pages/ApiKeysPage.js';
+import ApiDocsPage from './pages/ApiDocsPage.js';
 
 export default function App() {
     return (
@@ -21,21 +23,38 @@ export default function App() {
                         <Route path="/" element={<HomePage />} />
                         <Route path="/decode" element={<DecodePage />} />
                         <Route path="/compare" element={<ComparePage />} />
-                        <Route path="/docs" element={<ComingSoonPage featureName="API Documentation" phase="Phase 11" description="Integrate Rasbur directly into your workflows with our fully-featured REST API docs and SDKs." />} />
+                        <Route path="/docs" element={<ApiDocsPage />} />
                         <Route path="/s/:slug" element={<SharedResultPage />} />
                         <Route path="/auth/callback" element={<AuthCallbackPage />} />
                         <Route path="/login" element={<LoginPage />} />
                         <Route element={<ProtectedRoute />}>
                             <Route path="/settings/profile" element={<ProfilePage />} />
                             <Route path="/history" element={<HistoryPage />} />
-                            <Route path="/plugins" element={<ComingSoonPage featureName="Custom Plugins" phase="Phase 10" description="Write, test, and sandbox-run custom string decoders in our Monaco Editor workspace." />} />
-                            <Route path="/settings/api-keys" element={<ComingSoonPage featureName="API Keys" phase="Phase 8" description="Provision, manage, and track usage statistics for cryptographically secure API keys." />} />
-                            <Route path="/settings/webhooks" element={<ComingSoonPage featureName="Webhook Integrations" phase="Phase 13" description="Configure, activate, and review delivery logs for real-time decoding event webhooks." />} />
+                            <Route
+                                path="/plugins"
+                                element={
+                                    <ComingSoonPage
+                                        featureName="Custom Plugins"
+                                        phase="Phase 10"
+                                        description="Write, test, and sandbox-run custom string decoders in our Monaco Editor workspace."
+                                    />
+                                }
+                            />
+                            <Route path="/settings/api-keys" element={<ApiKeysPage />} />
+                            <Route
+                                path="/settings/webhooks"
+                                element={
+                                    <ComingSoonPage
+                                        featureName="Webhook Integrations"
+                                        phase="Phase 13"
+                                        description="Configure, activate, and review delivery logs for real-time decoding event webhooks."
+                                    />
+                                }
+                            />
                         </Route>
                     </Route>
                 </Routes>
             </BrowserRouter>
         </AuthProvider>
-
     );
 }
