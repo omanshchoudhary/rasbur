@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { generateKeyPairSync } from 'node:crypto';
 
 const { privateKey, publicKey } = generateKeyPairSync('rsa', {
