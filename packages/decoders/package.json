@@ -6,12 +6,14 @@
     "main": "./src/index.ts",
     "types": "./src/index.ts",
     "scripts": {
-        "build": "tsc"
+        "build": "tsc",
+        "test": "vitest run"
     },
     "dependencies": {
         "@rasbur/shared": "*"
     },
     "devDependencies": {
-        "@types/node": "^20.0.0"
+        "@types/node": "^20.0.0",
+        "vitest": "^3.2.6"
     }
 }
