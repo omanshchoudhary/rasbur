@@ -13,6 +13,8 @@ import SharedResultPage from './pages/SharedResultPage.js';
 import ComparePage from './pages/ComparePage.js';
 import ApiKeysPage from './pages/ApiKeysPage.js';
 import ApiDocsPage from './pages/ApiDocsPage.js';
+import PrivacyPage from './pages/PrivacyPage.js';
+import TermsPage from './pages/TermsPage.js';
 
 export default function App() {
     return (
@@ -25,6 +27,8 @@ export default function App() {
                         <Route path="/compare" element={<ComparePage />} />
                         <Route path="/docs" element={<ApiDocsPage />} />
                         <Route path="/s/:slug" element={<SharedResultPage />} />
+                        <Route path="/privacy" element={<PrivacyPage />} />
+                        <Route path="/terms" element={<TermsPage />} />
                         <Route path="/auth/callback" element={<AuthCallbackPage />} />
                         <Route path="/login" element={<LoginPage />} />
                         <Route element={<ProtectedRoute />}>
