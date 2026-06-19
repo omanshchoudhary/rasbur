@@ -62,7 +62,7 @@ export default function AppLayout() {
         {
             id: '3',
             title: 'API Rate Limits',
-            description: 'Free accounts get 100 daily API requests. Track usage in settings.',
+            description: 'Each account gets 100 API requests per day. Track usage in settings.',
             time: '1d ago',
             unread: false,
         },

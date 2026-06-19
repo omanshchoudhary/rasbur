@@ -474,9 +474,9 @@ export default function HomePage() {
                         String Obfuscation <span className="text-glow-gradient">Decoded.</span>
                     </h1>
                     <p className="home-subtitle">
-                        Instantly detect, dissect, and visualize encoding layers in one beautiful,
-                        real-time workspace. Built for security analysts, developers, and
-                        researchers.
+                        Paste an encoded string and Rasbur detects the format, peels back each
+                        layer, and shows exactly how it was built. Made for developers, CTF players,
+                        and security researchers.
                     </p>
 
                     <div className="home-cta-row">
@@ -709,11 +709,10 @@ export default function HomePage() {
             <section id="features" className="mb-24 relative z-10">
                 <div className="text-center mb-16 reveal-on-scroll">
                     <h2 className="text-3xl md:text-5xl font-black text-white mb-4">
-                        What makes Rasbur different
+                        What Rasbur does
                     </h2>
                     <p className="text-neutral-400 max-w-xl mx-auto">
-                        Unified, high-performance workspace built specifically for security analysis
-                        and developers.
+                        One workspace to detect, decode, compare, and automate string analysis.
                     </p>
                 </div>
 
@@ -902,8 +901,8 @@ export default function HomePage() {
                                 </div>
                                 <h3 className="text-lg font-bold text-white mb-2">REST API</h3>
                                 <p className="text-neutral-400 text-xs leading-relaxed max-w-md">
-                                    Integrate high-speed, secure server-side decoding capabilities
-                                    directly into your workflows.
+                                    Call the same decode pipeline from your own code over a simple
+                                    JSON API, authenticated with scoped keys.
                                 </p>
                             </div>
 
@@ -1059,7 +1058,7 @@ export default function HomePage() {
             <section className="mb-24 relative z-10 border border-white/5 bg-neutral-950/45 backdrop-blur-md rounded-3xl p-8 md:p-12 text-center">
                 <div className="text-center mb-12 reveal-on-scroll">
                     <h2 className="text-2xl md:text-4xl font-black text-white">
-                        Three steps to instant clarity
+                        From encoded to readable in three steps
                     </h2>
                 </div>
 
@@ -1127,7 +1126,8 @@ export default function HomePage() {
                                     <Clipboard className="w-4 h-4" strokeWidth={1.8} />
                                 </div>
                                 <p className="text-neutral-400 text-xs leading-relaxed mt-1">
-                                    Input obfuscated text, cipher payloads, or base string tokens.
+                                    Drop in any encoded string — Base64, hex, a JWT, Morse, a
+                                    cipher, or several layers at once.
                                 </p>
                             </div>
                         </div>
@@ -1190,8 +1190,8 @@ export default function HomePage() {
                                     <Search className="w-4 h-4" strokeWidth={1.8} />
                                 </div>
                                 <p className="text-neutral-400 text-xs leading-relaxed mt-1">
-                                    Rasbur ranks likely encoding patterns and structures
-                                    dynamically.
+                                    Rasbur scores each decoder against the input and the decoded
+                                    output to find the best match.
                                 </p>
                             </div>
                         </div>
@@ -1254,8 +1254,8 @@ export default function HomePage() {
                                     <Code className="w-4 h-4" strokeWidth={1.8} />
                                 </div>
                                 <p className="text-neutral-400 text-xs leading-relaxed mt-1">
-                                    Execute pipelines with complete transparency and extract clean
-                                    data.
+                                    It peels back each layer in order, showing every step and its
+                                    confidence score.
                                 </p>
                             </div>
                         </div>
@@ -1267,11 +1267,10 @@ export default function HomePage() {
                 <div className="cta-dev-card-glow" />
                 <div className="relative z-10">
                     <h2 className="text-3xl md:text-5xl font-black text-white mb-4">
-                        Ready to dissect payloads?
+                        Decode your first string
                     </h2>
                     <p className="text-neutral-500 text-sm md:text-base mb-8 max-w-xl mx-auto">
-                        Try the workspace now. Fully interactive decoder capabilities are live and
-                        ready to use.
+                        Open the workspace, paste a string, and watch every layer come apart.
                     </p>
                     <div className="flex justify-center">
                         <Link
@@ -1294,8 +1293,9 @@ export default function HomePage() {
                             </span>
                         </Link>
                         <p className="text-neutral-500 text-sm leading-relaxed">
-                            Intelligent string decoding platform.
+                            Detects and decodes encoded strings — in your browser or over the API.
                         </p>
+                        <p className="text-neutral-600 text-xs">Free and open source · MIT</p>
                     </div>
 
                     {/* Product Column */}
@@ -1313,14 +1313,12 @@ export default function HomePage() {
                                 </Link>
                             </li>
                             <li>
-                                <a
+                                <Link
                                     className="footer-link text-neutral-400 hover:text-white text-sm transition-colors duration-200 no-underline"
-                                    href="https://github.com/omanshchoudhary/rasbur/tree/main/apps/cli"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
+                                    to="/compare"
                                 >
-                                    CLI Tool
-                                </a>
+                                    Compare
+                                </Link>
                             </li>
                             <li>
                                 <Link
@@ -1392,6 +1390,16 @@ export default function HomePage() {
                                     Terms of Service
                                 </Link>
                             </li>
+                            <li>
+                                <a
+                                    className="footer-link text-neutral-400 hover:text-white text-sm transition-colors duration-200 no-underline"
+                                    href="https://github.com/omanshchoudhary/rasbur/blob/main/LICENSE"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    License (MIT)
+                                </a>
+                            </li>
                         </ul>
                     </div>
                 </div>
@@ -1402,9 +1410,9 @@ export default function HomePage() {
                     <div className="flex items-center gap-2">
                         <span className="status-dot"></span>
                         <span>
-                            Live system status: Online{' '}
-                            {decoderCount !== null &&
-                                `— Connected with ${decoderCount} system decoders`}
+                            {decoderCount !== null
+                                ? `API online · ${decoderCount} decoders`
+                                : 'In beta'}
                         </span>
                     </div>
                 </div>
