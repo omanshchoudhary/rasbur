@@ -2,6 +2,7 @@ import { useState, useEffect, Fragment } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import type { DecodeResult, DecodeOptions, DecoderInfo } from '@rasbur/shared';
 import { api } from '@/services/api.js';
+import { getAccessToken } from '@/services/auth.js';
 import DecodePipeline from '@/components/DecodePipeline.js';
 import { useWebSocket } from '@/hooks/useWebSocket.js';
 import { useAuth } from '@/context/AuthContext.js';
@@ -46,8 +47,14 @@ export default function DecodePage() {
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [decodeSource, setDecodeSource] = useState<'live' | 'rest' | null>(null);
 
-    const { socket, status, isConnected } = useWebSocket();
     const { isAuthenticated } = useAuth();
+    // Pass the auth token so the socket can authenticate. Without it the server
+    // rejects the handshake and the badge shows a permanent "Connection error"
+    // even though REST decoding still works. Keyed on isAuthenticated so login
+    // /logout re-reads the token and reconnects.
+    const { socket, status, isConnected } = useWebSocket({
+        token: isAuthenticated ? getAccessToken() : null,
+    });
     const [shareState, setShareState] = useState<'idle' | 'sharing' | 'copied' | 'error'>('idle');
     const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle');
     const [decoders, setDecoders] = useState<DecoderInfo[]>([]);
