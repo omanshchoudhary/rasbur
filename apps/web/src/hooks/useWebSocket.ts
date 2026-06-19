@@ -1,12 +1,12 @@
-import { useEffect, useRef, useState } from "react";
-import { io, Socket } from "socket.io-client"
+import { useEffect, useRef, useState } from 'react';
+import { io, Socket } from 'socket.io-client';
 
 type WebSocketStatus = 'idle' | 'connecting' | 'connected' | 'disconnected' | 'error';
 
 type UseWebSocketOptions = {
     token?: string | null;
     autoConnect?: boolean;
-}
+};
 
 type UseWebSocketResult = {
     socket: Socket | null;
@@ -14,7 +14,7 @@ type UseWebSocketResult = {
     isConnected: boolean;
     connect: () => void;
     disconnect: () => void;
-}
+};
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '').trim().replace(/\/$/, '');
 
@@ -27,10 +27,14 @@ export function useWebSocket({
     const [status, setStatus] = useState<WebSocketStatus>('idle');
 
     function connect() {
-        if (socketRef.current?.connected) {
-            return;
+        // Tear down any existing socket first. On login/logout the token changes and
+        // connect() is called again; without this the already-connected anonymous socket
+        // would be reused and never pick up the new auth payload.
+        if (socketRef.current) {
+            socketRef.current.disconnect();
+            socketRef.current = null;
         }
-        setStatus('connecting')
+        setStatus('connecting');
 
         const socket = io(API_BASE_URL || undefined, {
             autoConnect: false,
@@ -69,8 +73,8 @@ export function useWebSocket({
         return () => {
             socketRef.current?.disconnect();
             socketRef.current = null;
-        }
-    }, [autoConnect, token])
+        };
+    }, [autoConnect, token]);
 
     return {
         socket: socketRef.current,
