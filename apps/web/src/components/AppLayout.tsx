@@ -146,6 +146,7 @@ export default function AppLayout() {
 
     const navLinks = [
         { to: '/#features', label: 'Features', end: false, locked: false },
+        { to: '/about', label: 'About', end: false, locked: false },
         { to: '/docs', label: 'Docs', end: false, locked: false },
     ];
 

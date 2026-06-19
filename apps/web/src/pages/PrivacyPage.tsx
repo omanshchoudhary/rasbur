@@ -73,6 +73,25 @@ export default function PrivacyPage() {
                     ),
                 },
                 {
+                    heading: 'Open source',
+                    body: (
+                        <p>
+                            Rasbur is open source under the MIT license. You can read exactly how
+                            inputs are processed, and verify everything in this policy, in the
+                            public source on{' '}
+                            <a
+                                className="text-neutral-300 hover:text-white underline underline-offset-2"
+                                href="https://github.com/omanshchoudhary/rasbur"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                GitHub
+                            </a>
+                            .
+                        </p>
+                    ),
+                },
+                {
                     heading: 'Changes to this policy',
                     body: (
                         <p>

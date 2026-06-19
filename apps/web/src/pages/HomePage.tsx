@@ -1340,6 +1340,14 @@ export default function HomePage() {
                             <li>
                                 <Link
                                     className="footer-link text-neutral-400 hover:text-white text-sm transition-colors duration-200 no-underline"
+                                    to="/about"
+                                >
+                                    About
+                                </Link>
+                            </li>
+                            <li>
+                                <Link
+                                    className="footer-link text-neutral-400 hover:text-white text-sm transition-colors duration-200 no-underline"
                                     to="/docs"
                                 >
                                     Documentation

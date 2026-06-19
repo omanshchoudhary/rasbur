@@ -19,6 +19,26 @@ export default function TermsPage() {
                     ),
                 },
                 {
+                    heading: 'Open source and license',
+                    body: (
+                        <p>
+                            Rasbur&apos;s source code is released under the MIT license. You are
+                            free to read, fork, and self-host it under those terms. These Terms of
+                            Service cover your use of the hosted service at this site, not the
+                            source code, which is governed by its{' '}
+                            <a
+                                className="text-neutral-300 hover:text-white underline underline-offset-2"
+                                href="https://github.com/omanshchoudhary/rasbur/blob/main/LICENSE"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                license
+                            </a>
+                            .
+                        </p>
+                    ),
+                },
+                {
                     heading: 'Your account',
                     body: (
                         <p>
