@@ -105,8 +105,6 @@ export default function ProfilePage() {
               .toUpperCase()
         : 'U';
 
-    const isPro = user?.tier === 'pro';
-
     return (
         <div className="max-w-2xl mx-auto py-12 px-4">
             {/* Header Title */}
@@ -143,17 +141,6 @@ export default function ProfilePage() {
                     <div className="text-center sm:text-left flex-1">
                         <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
                             <h2 className="text-2xl font-bold text-text-50">{user?.name}</h2>
-
-                            {/* Tier Badge */}
-                            {isPro ? (
-                                <span className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-500 text-surface-950 shadow-md shadow-amber-500/10">
-                                    ★ PRO
-                                </span>
-                            ) : (
-                                <span className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-surface-800 border border-white/10 text-text-300">
-                                    FREE TIER
-                                </span>
-                            )}
                         </div>
                         <p className="text-text-300 text-sm mt-1">{user?.email}</p>
 

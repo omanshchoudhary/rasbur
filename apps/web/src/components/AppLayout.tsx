@@ -7,7 +7,7 @@ export default function AppLayout() {
     const { user, isAuthenticated, logout } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
-    
+
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
     const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
@@ -18,7 +18,11 @@ export default function AppLayout() {
     const [activeIndex, setActiveIndex] = useState(0);
     const [isLockedModalOpen, setIsLockedModalOpen] = useState(false);
     const [lockedFeatureName, setLockedFeatureName] = useState('');
-    const [hoveredRect, setHoveredRect] = useState<{ left: number; width: number; opacity: number }>({ left: 0, width: 0, opacity: 0 });
+    const [hoveredRect, setHoveredRect] = useState<{
+        left: number;
+        width: number;
+        opacity: number;
+    }>({ left: 0, width: 0, opacity: 0 });
 
     const dropdownRef = useRef<HTMLDivElement>(null);
     const notificationsRef = useRef<HTMLDivElement>(null);
@@ -43,35 +47,39 @@ export default function AppLayout() {
         {
             id: '1',
             title: 'Welcome to Rasbur',
-            description: 'Start decoding strings instantly. Upgrade to Pro to unlock unlimited daily requests.',
+            description:
+                'Start decoding strings instantly — paste a payload and let the pipeline do the rest.',
             time: 'Just now',
-            unread: true
+            unread: true,
         },
         {
             id: '2',
             title: 'Pipeline Update',
             description: 'Caesar Cipher decoder now ranks English frequencies 30% faster.',
             time: '2h ago',
-            unread: true
+            unread: true,
         },
         {
             id: '3',
             title: 'API Rate Limits',
             description: 'Free accounts get 100 daily API requests. Track usage in settings.',
             time: '1d ago',
-            unread: false
-        }
+            unread: false,
+        },
     ];
 
     const [notifications, setNotifications] = useState(mockNotifications);
-    const unreadCount = notifications.filter(n => n.unread).length;
+    const unreadCount = notifications.filter((n) => n.unread).length;
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
                 setIsDropdownOpen(false);
             }
-            if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
+            if (
+                notificationsRef.current &&
+                !notificationsRef.current.contains(event.target as Node)
+            ) {
                 setIsNotificationsOpen(false);
             }
         }
@@ -95,7 +103,9 @@ export default function AppLayout() {
         } else {
             document.body.style.overflow = '';
         }
-        return () => { document.body.style.overflow = ''; };
+        return () => {
+            document.body.style.overflow = '';
+        };
     }, [isMobileDrawerOpen, isCmdPaletteOpen, isLockedModalOpen]);
 
     // Global Key Listener for Command Palette
@@ -103,7 +113,7 @@ export default function AppLayout() {
         const handleKeyDown = (e: KeyboardEvent) => {
             if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
                 e.preventDefault();
-                setIsCmdPaletteOpen(prev => !prev);
+                setIsCmdPaletteOpen((prev) => !prev);
             }
             if (e.key === 'Escape') {
                 setIsCmdPaletteOpen(false);
@@ -126,38 +136,102 @@ export default function AppLayout() {
     const getInitials = (name: string) => {
         return name
             ? name
-                .split(' ')
-                .map((n) => n[0])
-                .join('')
-                .slice(0, 2)
-                .toUpperCase()
+                  .split(' ')
+                  .map((n) => n[0])
+                  .join('')
+                  .slice(0, 2)
+                  .toUpperCase()
             : '?';
     };
 
     const navLinks = [
         { to: '/#features', label: 'Features', end: false, locked: false },
         { to: '/docs', label: 'Docs', end: false, locked: false },
-        { to: '/#pricing', label: 'Pricing', end: false, locked: false },
     ];
 
     const commandItems = [
-        { id: 'home', label: 'Go to Home', category: 'Navigation', shortcut: 'G H', perform: () => navigate('/') },
-        { id: 'decode', label: 'Go to Decoder Workspace', category: 'Navigation', shortcut: 'G D', perform: () => navigate('/decode') },
-        { id: 'docs', label: 'Go to Documentation', category: 'Navigation', shortcut: 'G O', perform: () => navigate('/docs') },
-        { id: 'login', label: 'Sign In / Register', category: 'Account', shortcut: 'A S', perform: () => navigate('/login'), hide: isAuthenticated },
-        { id: 'profile', label: 'View Profile Settings', category: 'Account', shortcut: 'A P', perform: () => navigate('/settings/profile'), hide: !isAuthenticated },
-        { id: 'api-keys', label: 'Manage API Keys', category: 'Account', shortcut: 'A K', perform: () => navigate('/settings/api-keys'), hide: !isAuthenticated },
+        {
+            id: 'home',
+            label: 'Go to Home',
+            category: 'Navigation',
+            shortcut: 'G H',
+            perform: () => navigate('/'),
+        },
+        {
+            id: 'decode',
+            label: 'Go to Decoder Workspace',
+            category: 'Navigation',
+            shortcut: 'G D',
+            perform: () => navigate('/decode'),
+        },
+        {
+            id: 'docs',
+            label: 'Go to Documentation',
+            category: 'Navigation',
+            shortcut: 'G O',
+            perform: () => navigate('/docs'),
+        },
+        {
+            id: 'login',
+            label: 'Sign In / Register',
+            category: 'Account',
+            shortcut: 'A S',
+            perform: () => navigate('/login'),
+            hide: isAuthenticated,
+        },
+        {
+            id: 'profile',
+            label: 'View Profile Settings',
+            category: 'Account',
+            shortcut: 'A P',
+            perform: () => navigate('/settings/profile'),
+            hide: !isAuthenticated,
+        },
+        {
+            id: 'api-keys',
+            label: 'Manage API Keys',
+            category: 'Account',
+            shortcut: 'A K',
+            perform: () => navigate('/settings/api-keys'),
+            hide: !isAuthenticated,
+        },
 
-        { id: 'dec-jwt', label: 'Decode JWT Token', category: 'Decoders', shortcut: 'D J', perform: () => navigate('/decode') },
-        { id: 'dec-b64', label: 'Decode Base64 JSON', category: 'Decoders', shortcut: 'D B', perform: () => navigate('/decode') },
-        { id: 'dec-hex', label: 'Decode Hex Payload', category: 'Decoders', shortcut: 'D H', perform: () => navigate('/decode') },
-        { id: 'dec-morse', label: 'Decode Morse Code', category: 'Decoders', shortcut: 'D M', perform: () => navigate('/decode') },
+        {
+            id: 'dec-jwt',
+            label: 'Decode JWT Token',
+            category: 'Decoders',
+            shortcut: 'D J',
+            perform: () => navigate('/decode'),
+        },
+        {
+            id: 'dec-b64',
+            label: 'Decode Base64 JSON',
+            category: 'Decoders',
+            shortcut: 'D B',
+            perform: () => navigate('/decode'),
+        },
+        {
+            id: 'dec-hex',
+            label: 'Decode Hex Payload',
+            category: 'Decoders',
+            shortcut: 'D H',
+            perform: () => navigate('/decode'),
+        },
+        {
+            id: 'dec-morse',
+            label: 'Decode Morse Code',
+            category: 'Decoders',
+            shortcut: 'D M',
+            perform: () => navigate('/decode'),
+        },
     ];
 
-    const filteredItems = commandItems.filter(item => {
+    const filteredItems = commandItems.filter((item) => {
         if (item.hide) return false;
-        return item.label.toLowerCase().includes(cmdSearchQuery.toLowerCase()) ||
-            item.category.toLowerCase().includes(cmdSearchQuery.toLowerCase());
+        return (
+            item.label.toLowerCase().includes(cmdSearchQuery.toLowerCase()) ||
+            item.category.toLowerCase().includes(cmdSearchQuery.toLowerCase())
+        );
     });
 
     useEffect(() => {
@@ -168,10 +242,10 @@ export default function AppLayout() {
         if (filteredItems.length === 0) return;
         if (e.key === 'ArrowDown') {
             e.preventDefault();
-            setActiveIndex(prev => (prev + 1) % filteredItems.length);
+            setActiveIndex((prev) => (prev + 1) % filteredItems.length);
         } else if (e.key === 'ArrowUp') {
             e.preventDefault();
-            setActiveIndex(prev => (prev - 1 + filteredItems.length) % filteredItems.length);
+            setActiveIndex((prev) => (prev - 1 + filteredItems.length) % filteredItems.length);
         } else if (e.key === 'Enter') {
             e.preventDefault();
             const activeCmd = filteredItems[activeIndex];
@@ -184,11 +258,11 @@ export default function AppLayout() {
     };
 
     const handleNotificationClick = (id: string) => {
-        setNotifications(prev => prev.map(n => n.id === id ? { ...n, unread: false } : n));
+        setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, unread: false } : n)));
     };
 
     const handleMarkAllRead = () => {
-        setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
+        setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })));
     };
 
     const closeMobileDrawer = () => setIsMobileDrawerOpen(false);
@@ -205,7 +279,7 @@ export default function AppLayout() {
                     <nav
                         className="app-nav"
                         aria-label="Primary"
-                        onMouseLeave={() => setHoveredRect(prev => ({ ...prev, opacity: 0 }))}
+                        onMouseLeave={() => setHoveredRect((prev) => ({ ...prev, opacity: 0 }))}
                     >
                         <span
                             className="app-nav-highlight"
@@ -231,7 +305,10 @@ export default function AppLayout() {
                                         e.preventDefault();
                                         const element = document.getElementById(id);
                                         if (element) {
-                                            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                            element.scrollIntoView({
+                                                behavior: 'smooth',
+                                                block: 'start',
+                                            });
                                             window.history.pushState(null, '', link.to);
                                         }
                                     }
@@ -242,11 +319,13 @@ export default function AppLayout() {
                                 <NavLink
                                     key={link.to}
                                     className={() => {
-                                        const isLinkActive =
-                                            link.to.includes('#')
-                                                ? location.pathname === '/' && location.hash === link.to.substring(1)
-                                                : location.pathname === link.to;
-                                        return isLinkActive ? 'app-nav-link is-active' : 'app-nav-link';
+                                        const isLinkActive = link.to.includes('#')
+                                            ? location.pathname === '/' &&
+                                              location.hash === link.to.substring(1)
+                                            : location.pathname === link.to;
+                                        return isLinkActive
+                                            ? 'app-nav-link is-active'
+                                            : 'app-nav-link';
                                     }}
                                     to={isLocked ? '#' : link.to}
                                     end={link.end}
@@ -256,7 +335,7 @@ export default function AppLayout() {
                                         setHoveredRect({
                                             left: el.offsetLeft,
                                             width: el.offsetWidth,
-                                            opacity: 1
+                                            opacity: 1,
                                         });
                                     }}
                                 >
@@ -264,7 +343,14 @@ export default function AppLayout() {
                                     {isLocked && (
                                         <span className="nav-lock-icon">
                                             <svg viewBox="0 0 24 24">
-                                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                                <rect
+                                                    x="3"
+                                                    y="11"
+                                                    width="18"
+                                                    height="11"
+                                                    rx="2"
+                                                    ry="2"
+                                                />
                                                 <path d="M7 11V7a5 5 0 0110 0v4" />
                                             </svg>
                                         </span>
@@ -309,37 +395,70 @@ export default function AppLayout() {
                                     <div className="notifications-dropdown-header">
                                         <h4>Notifications</h4>
                                         {unreadCount > 0 && (
-                                            <button className="notifications-mark-read" onClick={handleMarkAllRead}>
+                                            <button
+                                                className="notifications-mark-read"
+                                                onClick={handleMarkAllRead}
+                                            >
                                                 Mark all read
                                             </button>
                                         )}
                                     </div>
                                     <div className="notifications-dropdown-list">
-                                        {unreadCount > 0 && <div className="notifications-section-label">New</div>}
-                                        {notifications.filter(n => n.unread).map((notif) => (
-                                            <div key={notif.id} className="notification-dropdown-item" onClick={() => handleNotificationClick(notif.id)}>
-                                                <span className="notification-dot-indicator notification-dot-indicator--unread" />
-                                                <div className="notification-item-body">
-                                                    <p className="notification-item-title">{notif.title}</p>
-                                                    <p className="notification-item-desc">{notif.description}</p>
-                                                    <span className="notification-item-time">{notif.time}</span>
+                                        {unreadCount > 0 && (
+                                            <div className="notifications-section-label">New</div>
+                                        )}
+                                        {notifications
+                                            .filter((n) => n.unread)
+                                            .map((notif) => (
+                                                <div
+                                                    key={notif.id}
+                                                    className="notification-dropdown-item"
+                                                    onClick={() =>
+                                                        handleNotificationClick(notif.id)
+                                                    }
+                                                >
+                                                    <span className="notification-dot-indicator notification-dot-indicator--unread" />
+                                                    <div className="notification-item-body">
+                                                        <p className="notification-item-title">
+                                                            {notif.title}
+                                                        </p>
+                                                        <p className="notification-item-desc">
+                                                            {notif.description}
+                                                        </p>
+                                                        <span className="notification-item-time">
+                                                            {notif.time}
+                                                        </span>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        ))}
+                                            ))}
                                         <div className="notifications-section-label">Earlier</div>
-                                        {notifications.filter(n => !n.unread).map((notif) => (
-                                            <div key={notif.id} className="notification-dropdown-item">
-                                                <span className="notification-dot-indicator notification-dot-indicator--read" />
-                                                <div className="notification-item-body">
-                                                    <p className="notification-item-title">{notif.title}</p>
-                                                    <p className="notification-item-desc">{notif.description}</p>
-                                                    <span className="notification-item-time">{notif.time}</span>
+                                        {notifications
+                                            .filter((n) => !n.unread)
+                                            .map((notif) => (
+                                                <div
+                                                    key={notif.id}
+                                                    className="notification-dropdown-item"
+                                                >
+                                                    <span className="notification-dot-indicator notification-dot-indicator--read" />
+                                                    <div className="notification-item-body">
+                                                        <p className="notification-item-title">
+                                                            {notif.title}
+                                                        </p>
+                                                        <p className="notification-item-desc">
+                                                            {notif.description}
+                                                        </p>
+                                                        <span className="notification-item-time">
+                                                            {notif.time}
+                                                        </span>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        ))}
+                                            ))}
                                     </div>
                                     <div className="notifications-dropdown-footer">
-                                        <button className="notifications-view-all" onClick={() => setIsNotificationsOpen(false)}>
+                                        <button
+                                            className="notifications-view-all"
+                                            onClick={() => setIsNotificationsOpen(false)}
+                                        >
                                             Dismiss Menu
                                         </button>
                                     </div>
@@ -360,7 +479,11 @@ export default function AppLayout() {
                                     aria-haspopup="true"
                                 >
                                     {user.avatar ? (
-                                        <img className="user-avatar" src={user.avatar} alt={user.name} />
+                                        <img
+                                            className="user-avatar"
+                                            src={user.avatar}
+                                            alt={user.name}
+                                        />
                                     ) : (
                                         <div className="user-avatar-placeholder">
                                             {getInitials(user.name)}
@@ -385,7 +508,11 @@ export default function AppLayout() {
                                     <div className="user-dropdown-menu">
                                         <div className="user-dropdown-card">
                                             {user.avatar ? (
-                                                <img className="user-dropdown-card-avatar" src={user.avatar} alt={user.name} />
+                                                <img
+                                                    className="user-dropdown-card-avatar"
+                                                    src={user.avatar}
+                                                    alt={user.name}
+                                                />
                                             ) : (
                                                 <div className="user-dropdown-card-avatar-placeholder">
                                                     {getInitials(user.name)}
@@ -393,10 +520,9 @@ export default function AppLayout() {
                                             )}
                                             <div className="user-dropdown-card-info">
                                                 <div className="user-dropdown-card-name">
-                                                    <p className="user-dropdown-name">{user.name}</p>
-                                                    <span className={`tier-badge ${user.tier === 'pro' ? 'tier-badge--pro' : 'tier-badge--free'}`}>
-                                                        {user.tier === 'pro' ? 'Pro' : 'Free'}
-                                                    </span>
+                                                    <p className="user-dropdown-name">
+                                                        {user.name}
+                                                    </p>
                                                 </div>
                                                 <p className="user-dropdown-email">{user.email}</p>
                                             </div>
@@ -407,8 +533,17 @@ export default function AppLayout() {
                                                 className="user-dropdown-item"
                                                 onClick={() => setIsDropdownOpen(false)}
                                             >
-                                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                <svg
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={1.5}
+                                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                                    />
                                                 </svg>
                                                 Profile
                                             </NavLink>
@@ -417,8 +552,17 @@ export default function AppLayout() {
                                                 className="user-dropdown-item"
                                                 onClick={() => setIsDropdownOpen(false)}
                                             >
-                                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                                                <svg
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={1.5}
+                                                        d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
+                                                    />
                                                 </svg>
                                                 API Keys
                                             </NavLink>
@@ -427,8 +571,17 @@ export default function AppLayout() {
                                                 className="user-dropdown-item"
                                                 onClick={() => setIsDropdownOpen(false)}
                                             >
-                                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                                <svg
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={1.5}
+                                                        d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                                                    />
                                                 </svg>
                                                 Webhooks
                                             </NavLink>
@@ -437,8 +590,17 @@ export default function AppLayout() {
                                                 className="user-dropdown-item"
                                                 onClick={() => setIsDropdownOpen(false)}
                                             >
-                                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
+                                                <svg
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={1.5}
+                                                        d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"
+                                                    />
                                                 </svg>
                                                 Plugins
                                             </NavLink>
@@ -452,8 +614,17 @@ export default function AppLayout() {
                                                 }}
                                                 className="user-dropdown-item user-dropdown-item--logout"
                                             >
-                                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                                <svg
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={1.5}
+                                                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                                                    />
                                                 </svg>
                                                 Sign Out
                                             </button>
@@ -473,7 +644,12 @@ export default function AppLayout() {
                             aria-label="Open menu"
                         >
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M4 6h16M4 12h16M4 18h16"
+                                />
                             </svg>
                         </button>
                     </div>
@@ -486,9 +662,18 @@ export default function AppLayout() {
                     <div className="mobile-drawer">
                         <div className="mobile-drawer-header">
                             <span className="mobile-drawer-brand">Rasbur</span>
-                            <button className="mobile-drawer-close" onClick={closeMobileDrawer} aria-label="Close menu">
+                            <button
+                                className="mobile-drawer-close"
+                                onClick={closeMobileDrawer}
+                                aria-label="Close menu"
+                            >
                                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M6 18L18 6M6 6l12 12"
+                                    />
                                 </svg>
                             </button>
                         </div>
@@ -501,7 +686,10 @@ export default function AppLayout() {
                                             e.preventDefault();
                                             const element = document.getElementById(id);
                                             if (element) {
-                                                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                                element.scrollIntoView({
+                                                    behavior: 'smooth',
+                                                    block: 'start',
+                                                });
                                                 window.history.pushState(null, '', link.to);
                                             }
                                         }
@@ -512,11 +700,13 @@ export default function AppLayout() {
                                     <NavLink
                                         key={link.to}
                                         className={() => {
-                                            const isLinkActive =
-                                                link.to.includes('#')
-                                                    ? location.pathname === '/' && location.hash === link.to.substring(1)
-                                                    : location.pathname === link.to;
-                                            return isLinkActive ? 'mobile-nav-link is-active' : 'mobile-nav-link';
+                                            const isLinkActive = link.to.includes('#')
+                                                ? location.pathname === '/' &&
+                                                  location.hash === link.to.substring(1)
+                                                : location.pathname === link.to;
+                                            return isLinkActive
+                                                ? 'mobile-nav-link is-active'
+                                                : 'mobile-nav-link';
                                         }}
                                         to={link.to}
                                         end={link.end}
@@ -530,9 +720,16 @@ export default function AppLayout() {
                         <div className="mobile-drawer-divider" />
                         <div className="mobile-drawer-auth">
                             {isAuthenticated && user ? (
-                                <div className="user-dropdown-card" style={{ border: 'none', padding: 0 }}>
+                                <div
+                                    className="user-dropdown-card"
+                                    style={{ border: 'none', padding: 0 }}
+                                >
                                     {user.avatar ? (
-                                        <img className="user-dropdown-card-avatar" src={user.avatar} alt={user.name} />
+                                        <img
+                                            className="user-dropdown-card-avatar"
+                                            src={user.avatar}
+                                            alt={user.name}
+                                        />
                                     ) : (
                                         <div className="user-dropdown-card-avatar-placeholder">
                                             {getInitials(user.name)}
@@ -541,15 +738,16 @@ export default function AppLayout() {
                                     <div className="user-dropdown-card-info">
                                         <div className="user-dropdown-card-name">
                                             <p className="user-dropdown-name">{user.name}</p>
-                                            <span className={`tier-badge ${user.tier === 'pro' ? 'tier-badge--pro' : 'tier-badge--free'}`}>
-                                                {user.tier === 'pro' ? 'Pro' : 'Free'}
-                                            </span>
                                         </div>
                                         <p className="user-dropdown-email">{user.email}</p>
                                     </div>
                                 </div>
                             ) : (
-                                <NavLink className="mobile-sign-in-btn" to="/login" onClick={closeMobileDrawer}>
+                                <NavLink
+                                    className="mobile-sign-in-btn"
+                                    to="/login"
+                                    onClick={closeMobileDrawer}
+                                >
                                     Sign In
                                 </NavLink>
                             )}
@@ -595,7 +793,9 @@ export default function AppLayout() {
                                         return (
                                             <div key={item.id}>
                                                 {showCategory && (
-                                                    <div className="cmd-palette-category">{currentCategory}</div>
+                                                    <div className="cmd-palette-category">
+                                                        {currentCategory}
+                                                    </div>
                                                 )}
                                                 <div
                                                     className={`cmd-palette-item ${isSelected ? 'is-active' : ''}`}
@@ -607,25 +807,49 @@ export default function AppLayout() {
                                                     onMouseEnter={() => setActiveIndex(itemIndex)}
                                                 >
                                                     <div className="cmd-palette-item-left">
-                                                        <svg className="cmd-palette-item-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <svg
+                                                            className="cmd-palette-item-icon"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24"
+                                                        >
                                                             {item.category === 'Navigation' ? (
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    strokeWidth={2}
+                                                                    d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+                                                                />
                                                             ) : item.category === 'Account' ? (
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    strokeWidth={2}
+                                                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                                                />
                                                             ) : (
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    strokeWidth={2}
+                                                                    d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
+                                                                />
                                                             )}
                                                         </svg>
                                                         <span>{item.label}</span>
                                                     </div>
-                                                    <span className="cmd-palette-shortcut">{item.shortcut}</span>
+                                                    <span className="cmd-palette-shortcut">
+                                                        {item.shortcut}
+                                                    </span>
                                                 </div>
                                             </div>
                                         );
                                     });
                                 })()
                             ) : (
-                                <div className="cmd-palette-empty">No results found for "{cmdSearchQuery}"</div>
+                                <div className="cmd-palette-empty">
+                                    No results found for "{cmdSearchQuery}"
+                                </div>
                             )}
                         </div>
                     </div>
@@ -638,7 +862,15 @@ export default function AppLayout() {
                     <div className="locked-modal-card" onClick={(e) => e.stopPropagation()}>
                         <div className="locked-modal-icon-wrapper">
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" strokeWidth={2} />
+                                <rect
+                                    x="3"
+                                    y="11"
+                                    width="18"
+                                    height="11"
+                                    rx="2"
+                                    ry="2"
+                                    strokeWidth={2}
+                                />
                                 <path d="M7 11V7a5 5 0 0110 0v4" strokeWidth={2} />
                             </svg>
                         </div>
@@ -652,19 +884,42 @@ export default function AppLayout() {
                         <div className="locked-modal-benefits">
                             <div className="locked-modal-benefit-item">
                                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M5 13l4 4L19 7"
+                                    />
                                 </svg>
-                                <span>{lockedFeatureName === 'History' ? 'Unlimited Session Storage' : 'Access to 50+ Custom Plugins'}</span>
+                                <span>
+                                    {lockedFeatureName === 'History'
+                                        ? 'Unlimited Session Storage'
+                                        : 'Access to 50+ Custom Plugins'}
+                                </span>
                             </div>
                             <div className="locked-modal-benefit-item">
                                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M5 13l4 4L19 7"
+                                    />
                                 </svg>
-                                <span>{lockedFeatureName === 'History' ? 'One-Click Pipeline Restoration' : 'WASM & REST SDK Support'}</span>
+                                <span>
+                                    {lockedFeatureName === 'History'
+                                        ? 'One-Click Pipeline Restoration'
+                                        : 'WASM & REST SDK Support'}
+                                </span>
                             </div>
                             <div className="locked-modal-benefit-item">
                                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M5 13l4 4L19 7"
+                                    />
                                 </svg>
                                 <span>Secure Shared Workspaces</span>
                             </div>
@@ -680,7 +935,10 @@ export default function AppLayout() {
                             >
                                 Sign In or Register Free
                             </button>
-                            <button className="locked-modal-secondary-btn" onClick={() => setIsLockedModalOpen(false)}>
+                            <button
+                                className="locked-modal-secondary-btn"
+                                onClick={() => setIsLockedModalOpen(false)}
+                            >
                                 Go Back
                             </button>
                         </div>
