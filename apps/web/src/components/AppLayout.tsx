@@ -270,6 +270,20 @@ export default function AppLayout() {
 
     return (
         <div className="app-shell">
+            <div className="beta-banner" role="status">
+                <span className="beta-banner-text">
+                    <strong>Open beta</strong> — saved history, API keys, and accounts may be wiped
+                    during testing. Please don&apos;t store anything important.
+                </span>
+                <a
+                    className="beta-banner-link"
+                    href="https://github.com/omanshchoudhary/rasbur/issues"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    Report a bug →
+                </a>
+            </div>
             <header className={`app-header ${isScrolled ? 'header--scrolled' : ''}`}>
                 <div className="app-header-inner">
                     <NavLink className="app-brand" to="/">
