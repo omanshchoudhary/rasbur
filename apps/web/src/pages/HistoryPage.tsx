@@ -2,7 +2,19 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import type { HistoryEntry } from '@rasbur/shared';
 import { api } from '@/services/api.js';
-import { Search, Trash2, RefreshCw, ChevronLeft, ChevronRight, Filter, Calendar, Database, Eye, X, Share2 } from 'lucide-react';
+import {
+    Search,
+    Trash2,
+    RefreshCw,
+    ChevronLeft,
+    ChevronRight,
+    Filter,
+    Calendar,
+    Database,
+    Eye,
+    X,
+    Share2,
+} from 'lucide-react';
 
 export default function HistoryPage() {
     const navigate = useNavigate();
@@ -14,27 +26,29 @@ export default function HistoryPage() {
     const [limit, setLimit] = useState(10);
     const [totalPages, setTotalPages] = useState(1);
     const [total, setTotal] = useState(0);
-    
+
     // Filters State
     const [search, setSearch] = useState('');
     const [encodingType, setEncodingType] = useState('');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
-    
+
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [expandedEntryId, setExpandedEntryId] = useState<string | null>(null);
 
     // List of decoder types for the filter dropdown
+    // ids must match the decoderName stored on each step exactly; the backend does a
+    // case-sensitive exact match on `steps.decoderName`.
     const DECODER_TYPES = [
-        { id: 'hex', label: 'Hex' },
-        { id: 'base64', label: 'Base64' },
-        { id: 'morse', label: 'Morse' },
-        { id: 'jwt', label: 'JWT' },
-        { id: 'binary', label: 'Binary' },
-        { id: 'url', label: 'URL' },
-        { id: 'rot13', label: 'Rot13' },
-        { id: 'caesar', label: 'Caesar' }
+        { id: 'Hex', label: 'Hex' },
+        { id: 'Base64', label: 'Base64' },
+        { id: 'Morse', label: 'Morse' },
+        { id: 'JWT', label: 'JWT' },
+        { id: 'Binary', label: 'Binary' },
+        { id: 'URL', label: 'URL' },
+        { id: 'ROT13', label: 'ROT13' },
+        { id: 'Caesar Cipher', label: 'Caesar' },
     ];
 
     async function fetchHistory() {
@@ -75,7 +89,7 @@ export default function HistoryPage() {
     async function handleDeleteEntry(id: string, e: React.MouseEvent) {
         e.stopPropagation();
         if (!window.confirm('Are you sure you want to delete this history item?')) return;
-        
+
         try {
             const response = await api.delete<any>(`/history/${id}`);
             if (response.ok) {
@@ -90,7 +104,7 @@ export default function HistoryPage() {
 
     async function handleClearAll() {
         if (!window.confirm('Are you sure you want to clear your entire decode history?')) return;
-        
+
         try {
             const response = await api.delete<any>('/history');
             if (response.ok) {
@@ -184,7 +198,10 @@ export default function HistoryPage() {
                             type="text"
                             placeholder="Search inputs or outputs..."
                             value={search}
-                            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                            onChange={(e) => {
+                                setSearch(e.target.value);
+                                setPage(1);
+                            }}
                             className="w-full bg-neutral-900 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-blue-500/50 transition-colors"
                         />
                     </div>
@@ -193,12 +210,17 @@ export default function HistoryPage() {
                     <div className="relative">
                         <select
                             value={encodingType}
-                            onChange={(e) => { setEncodingType(e.target.value); setPage(1); }}
+                            onChange={(e) => {
+                                setEncodingType(e.target.value);
+                                setPage(1);
+                            }}
                             className="w-full bg-neutral-900 border border-white/10 rounded-xl py-2.5 px-4 text-sm text-white focus:outline-none focus:border-blue-500/50 transition-colors appearance-none cursor-pointer"
                         >
                             <option value="">All Encoding Types</option>
-                            {DECODER_TYPES.map(type => (
-                                <option key={type.id} value={type.id}>{type.label}</option>
+                            {DECODER_TYPES.map((type) => (
+                                <option key={type.id} value={type.id}>
+                                    {type.label}
+                                </option>
                             ))}
                         </select>
                         <span className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-neutral-500">
@@ -215,7 +237,10 @@ export default function HistoryPage() {
                             type="date"
                             placeholder="Start Date"
                             value={startDate}
-                            onChange={(e) => { setStartDate(e.target.value); setPage(1); }}
+                            onChange={(e) => {
+                                setStartDate(e.target.value);
+                                setPage(1);
+                            }}
                             className="w-full bg-neutral-900 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-blue-500/50 transition-colors"
                         />
                     </div>
@@ -229,7 +254,10 @@ export default function HistoryPage() {
                             type="date"
                             placeholder="End Date"
                             value={endDate}
-                            onChange={(e) => { setEndDate(e.target.value); setPage(1); }}
+                            onChange={(e) => {
+                                setEndDate(e.target.value);
+                                setPage(1);
+                            }}
                             className="w-full bg-neutral-900 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-blue-500/50 transition-colors"
                         />
                     </div>
@@ -244,17 +272,20 @@ export default function HistoryPage() {
                         <span>Loading decode history...</span>
                     </div>
                 ) : error ? (
-                    <div className="p-16 text-center text-red-400">
-                        {error}
-                    </div>
+                    <div className="p-16 text-center text-red-400">{error}</div>
                 ) : entries.length === 0 ? (
                     <div className="p-16 text-center text-neutral-500 flex flex-col items-center gap-4">
                         <Database size={32} className="text-neutral-700" />
                         <div>
                             <p className="font-bold text-white text-sm">No History Found</p>
-                            <p className="text-xs text-neutral-500 mt-1">Try broadening your filters or decode a new string.</p>
+                            <p className="text-xs text-neutral-500 mt-1">
+                                Try broadening your filters or decode a new string.
+                            </p>
                         </div>
-                        <Link to="/decode" className="px-4 py-2 bg-white text-black text-xs font-bold rounded-lg hover:bg-neutral-200 transition-colors mt-2">
+                        <Link
+                            to="/decode"
+                            className="px-4 py-2 bg-white text-black text-xs font-bold rounded-lg hover:bg-neutral-200 transition-colors mt-2"
+                        >
                             Go to Decoder Workspace
                         </Link>
                     </div>
@@ -264,7 +295,7 @@ export default function HistoryPage() {
                             {entries.map((entry) => {
                                 const isExpanded = expandedEntryId === entry._id;
                                 return (
-                                    <div 
+                                    <div
                                         key={entry._id}
                                         onClick={() => toggleExpand(entry._id)}
                                         className="p-5 hover:bg-white/[0.02] cursor-pointer transition-colors duration-150"
@@ -274,19 +305,29 @@ export default function HistoryPage() {
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-3 mb-2 flex-wrap">
                                                     <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-500">
-                                                        {new Date(entry.createdAt).toLocaleString(undefined, {
-                                                            month: 'short',
-                                                            day: 'numeric',
-                                                            hour: '2-digit',
-                                                            minute: '2-digit'
-                                                        })}
+                                                        {new Date(entry.createdAt).toLocaleString(
+                                                            undefined,
+                                                            {
+                                                                month: 'short',
+                                                                day: 'numeric',
+                                                                hour: '2-digit',
+                                                                minute: '2-digit',
+                                                            }
+                                                        )}
                                                     </span>
-                                                    
+
                                                     {/* Pipeline sequence visual badges */}
                                                     <div className="flex items-center gap-1.5 flex-wrap">
                                                         {entry.steps.map((step, idx) => (
-                                                            <div key={idx} className="flex items-center gap-1.5">
-                                                                {idx > 0 && <span className="text-neutral-600 text-xs">➔</span>}
+                                                            <div
+                                                                key={idx}
+                                                                className="flex items-center gap-1.5"
+                                                            >
+                                                                {idx > 0 && (
+                                                                    <span className="text-neutral-600 text-xs">
+                                                                        ➔
+                                                                    </span>
+                                                                )}
                                                                 <span className="px-2 py-0.5 bg-blue-950/30 border border-blue-500/20 text-blue-400 rounded text-[10px] font-bold uppercase tracking-wider">
                                                                     {step.decoderName}
                                                                 </span>
@@ -294,7 +335,7 @@ export default function HistoryPage() {
                                                         ))}
                                                     </div>
                                                 </div>
-                                                
+
                                                 {/* Text inputs previews */}
                                                 <div className="text-sm font-mono text-white truncate max-w-xl">
                                                     {entry.originalInput}
@@ -321,10 +362,19 @@ export default function HistoryPage() {
                                                               : 'Share public link'
                                                     }
                                                 >
-                                                    <Share2 size={14} className={sharingId === entry._id ? 'animate-pulse' : ''} />
+                                                    <Share2
+                                                        size={14}
+                                                        className={
+                                                            sharingId === entry._id
+                                                                ? 'animate-pulse'
+                                                                : ''
+                                                        }
+                                                    />
                                                 </button>
                                                 <button
-                                                    onClick={(e) => handleReDecode(entry.originalInput, e)}
+                                                    onClick={(e) =>
+                                                        handleReDecode(entry.originalInput, e)
+                                                    }
                                                     className="p-2 bg-neutral-900 hover:bg-neutral-800 border border-white/5 hover:border-white/10 text-neutral-300 hover:text-white rounded-lg transition-colors flex items-center justify-center"
                                                     title="Re-decode in workspace"
                                                 >
@@ -338,25 +388,33 @@ export default function HistoryPage() {
                                                     <Trash2 size={14} />
                                                 </button>
                                                 <span className="text-neutral-600 text-xs px-1 select-none">
-                                                    {isExpanded ? <X size={14} /> : <Eye size={14} />}
+                                                    {isExpanded ? (
+                                                        <X size={14} />
+                                                    ) : (
+                                                        <Eye size={14} />
+                                                    )}
                                                 </span>
                                             </div>
                                         </div>
 
                                         {/* Expanded Detailed Pipeline Panel */}
                                         {isExpanded && (
-                                            <div 
+                                            <div
                                                 className="mt-4 pt-4 border-t border-white/5 grid grid-cols-1 md:grid-cols-2 gap-4"
                                                 onClick={(e) => e.stopPropagation()} // Prevent collapse on container click
                                             >
                                                 <div className="bg-neutral-950/60 p-4 border border-white/5 rounded-xl">
-                                                    <span className="block text-[10px] font-bold text-neutral-500 uppercase tracking-wider mb-2">Original Payload</span>
+                                                    <span className="block text-[10px] font-bold text-neutral-500 uppercase tracking-wider mb-2">
+                                                        Original Payload
+                                                    </span>
                                                     <pre className="text-xs text-neutral-300 font-mono overflow-auto max-h-40 whitespace-pre-wrap break-all">
                                                         {entry.originalInput}
                                                     </pre>
                                                 </div>
                                                 <div className="bg-neutral-950/60 p-4 border border-white/5 rounded-xl">
-                                                    <span className="block text-[10px] font-bold text-neutral-500 uppercase tracking-wider mb-2">Final Decoded Output</span>
+                                                    <span className="block text-[10px] font-bold text-neutral-500 uppercase tracking-wider mb-2">
+                                                        Final Decoded Output
+                                                    </span>
                                                     <pre className="text-xs text-white font-mono overflow-auto max-h-40 whitespace-pre-wrap break-all">
                                                         {entry.finalOutput}
                                                     </pre>
@@ -372,12 +430,21 @@ export default function HistoryPage() {
                         {totalPages > 1 && (
                             <div className="p-4 bg-neutral-950/60 border-t border-white/5 flex items-center justify-between text-xs text-neutral-400">
                                 <div>
-                                    Showing <span className="text-white font-semibold">{(page - 1) * limit + 1}</span> to <span className="text-white font-semibold">{Math.min(page * limit, total)}</span> of <span className="text-white font-semibold">{total}</span> decodes
+                                    Showing{' '}
+                                    <span className="text-white font-semibold">
+                                        {(page - 1) * limit + 1}
+                                    </span>{' '}
+                                    to{' '}
+                                    <span className="text-white font-semibold">
+                                        {Math.min(page * limit, total)}
+                                    </span>{' '}
+                                    of <span className="text-white font-semibold">{total}</span>{' '}
+                                    decodes
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <button
                                         disabled={page === 1}
-                                        onClick={() => setPage(p => Math.max(p - 1, 1))}
+                                        onClick={() => setPage((p) => Math.max(p - 1, 1))}
                                         className="p-1.5 rounded-lg border border-white/5 bg-neutral-900 text-neutral-400 hover:text-white disabled:opacity-40 disabled:hover:text-neutral-400 transition-colors"
                                     >
                                         <ChevronLeft size={16} />
@@ -387,7 +454,7 @@ export default function HistoryPage() {
                                     </span>
                                     <button
                                         disabled={page === totalPages}
-                                        onClick={() => setPage(p => Math.min(p + 1, totalPages))}
+                                        onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
                                         className="p-1.5 rounded-lg border border-white/5 bg-neutral-900 text-neutral-400 hover:text-white disabled:opacity-40 disabled:hover:text-neutral-400 transition-colors"
                                     >
                                         <ChevronRight size={16} />
