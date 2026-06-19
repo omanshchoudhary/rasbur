@@ -3,7 +3,18 @@ import { Link } from 'react-router-dom';
 import type { Preset, DemoStep } from '@rasbur/shared';
 import { api } from '@/services/api.js';
 import { useScrollReveal } from '@/hooks/useScrollReveal.js';
-import { Layers, Cpu, Radio, Terminal, Clipboard, Search, Code } from 'lucide-react';
+import {
+    Layers,
+    Cpu,
+    Radio,
+    Terminal,
+    Clipboard,
+    Search,
+    Code,
+    Share2,
+    GitCompareArrows,
+    KeyRound,
+} from 'lucide-react';
 
 const PRESETS: Preset[] = [
     {
@@ -27,6 +38,30 @@ const PRESETS: Preset[] = [
         value: '.-. .- ... -... ..- .-. / -.. . -.-. --- -.. . ...',
     },
 ];
+
+function isMostlyPrintable(text: string): boolean {
+    if (!text) return false;
+    let printable = 0;
+    for (let i = 0; i < text.length; i++) {
+        const code = text.charCodeAt(i);
+        if (code === 9 || code === 10 || code === 13 || (code >= 32 && code < 127)) {
+            printable++;
+        }
+    }
+    return printable / text.length >= 0.9;
+}
+
+function prettyIfJson(text: string): string {
+    try {
+        const parsed: unknown = JSON.parse(text);
+        if (typeof parsed === 'object' && parsed !== null) {
+            return JSON.stringify(parsed, null, 2);
+        }
+    } catch {
+        // not JSON, return as-is
+    }
+    return text;
+}
 
 function decodeLocal(input: string): { steps: DemoStep[]; output: string } {
     const trimmed = input.trim();
@@ -60,7 +95,7 @@ function decodeLocal(input: string): { steps: DemoStep[]; output: string } {
                         { name: 'Base64URL Header', confidence: 1.0, output: 'JSON Metadata' },
                         { name: 'Base64URL Payload', confidence: 1.0, output: 'JSON Payload' },
                     ],
-                    output: payload,
+                    output: prettyIfJson(payload),
                 };
             } catch {
                 // failed to parse as JWT
@@ -76,10 +111,12 @@ function decodeLocal(input: string): { steps: DemoStep[]; output: string } {
                 for (let i = 0; i < clean.length; i += 2) {
                     out += String.fromCharCode(parseInt(clean.substring(i, i + 2), 16));
                 }
-                return {
-                    steps: [{ name: 'Hexadecimal', confidence: 1.0, output: 'Plaintext' }],
-                    output: out,
-                };
+                if (isMostlyPrintable(out)) {
+                    return {
+                        steps: [{ name: 'Hexadecimal', confidence: 1.0, output: 'Plaintext' }],
+                        output: prettyIfJson(out),
+                    };
+                }
             } catch {
                 // failed to parse as Hex
             }
@@ -143,12 +180,14 @@ function decodeLocal(input: string): { steps: DemoStep[]; output: string } {
     }
 
     try {
-        if (/^[A-Za-z0-9+/=]+$/.test(trimmed) && trimmed.length % 4 === 0) {
+        if (/^[A-Za-z0-9+/=]+$/.test(trimmed) && trimmed.length % 4 === 0 && trimmed.length >= 8) {
             const decoded = atob(trimmed);
-            return {
-                steps: [{ name: 'Base64', confidence: 1.0, output: 'Plaintext' }],
-                output: decoded,
-            };
+            if (isMostlyPrintable(decoded)) {
+                return {
+                    steps: [{ name: 'Base64', confidence: 1.0, output: 'Plaintext' }],
+                    output: prettyIfJson(decoded),
+                };
+            }
         }
     } catch {
         // failed to parse as Base64
@@ -160,14 +199,19 @@ function decodeLocal(input: string): { steps: DemoStep[]; output: string } {
     };
 }
 
-function highlightTerminalText(text: string, presetId: string, isFocused: boolean) {
+function detectHighlightKind(text: string): string {
+    const trimmed = text.trim();
+    if (!trimmed) return 'custom';
+    if (/^[.\-/\s]+$/.test(trimmed)) return 'morse';
+    if (/^[\w-]+\.[\w-]+\.[\w-]*$/.test(trimmed)) return 'jwt';
+    if (/^(0x)?[0-9a-fA-F\s]+$/.test(trimmed)) return 'hex';
+    if (/^[A-Za-z0-9+/=]+$/.test(trimmed)) return 'base64';
+    return 'custom';
+}
+
+function highlightTerminalText(text: string, presetId: string, showCursor: boolean) {
     if (!text) {
-        return (
-            <>
-                <span style={{ color: 'rgba(255, 255, 255, 0.28)' }}>Paste your encoded string here...</span>
-                {isFocused && <span className="terminal-cursor-block" />}
-            </>
-        );
+        return showCursor ? <span className="terminal-cursor-block" /> : null;
     }
 
     const elements: React.ReactNode[] = [];
@@ -176,17 +220,37 @@ function highlightTerminalText(text: string, presetId: string, isFocused: boolea
         const parts = text.split('.');
         parts.forEach((part, index) => {
             if (index === 0) {
-                elements.push(<span key={`jwt-header-${index}`} style={{ color: '#00E5FF' }}>{part}</span>);
+                elements.push(
+                    <span key={`jwt-header-${index}`} style={{ color: '#00E5FF' }}>
+                        {part}
+                    </span>
+                );
             } else if (index === 1) {
-                elements.push(<span key={`jwt-payload-${index}`} style={{ color: '#00FF66' }}>{part}</span>);
+                elements.push(
+                    <span key={`jwt-payload-${index}`} style={{ color: '#00FF66' }}>
+                        {part}
+                    </span>
+                );
             } else if (index === 2) {
-                elements.push(<span key={`jwt-signature-${index}`} style={{ color: '#0066FF' }}>{part}</span>);
+                elements.push(
+                    <span key={`jwt-signature-${index}`} style={{ color: '#0066FF' }}>
+                        {part}
+                    </span>
+                );
             } else {
-                elements.push(<span key={`jwt-extra-${index}`} style={{ color: '#888888' }}>{part}</span>);
+                elements.push(
+                    <span key={`jwt-extra-${index}`} style={{ color: '#888888' }}>
+                        {part}
+                    </span>
+                );
             }
 
             if (index < parts.length - 1) {
-                elements.push(<span key={`jwt-dot-${index}`} style={{ color: '#FFFFFF', fontWeight: 'bold' }}>.</span>);
+                elements.push(
+                    <span key={`jwt-dot-${index}`} style={{ color: '#FFFFFF', fontWeight: 'bold' }}>
+                        .
+                    </span>
+                );
             }
         });
     } else if (presetId === 'hex') {
@@ -194,11 +258,23 @@ function highlightTerminalText(text: string, presetId: string, isFocused: boolea
             const char = text[i];
             if (char === undefined) continue;
             if (/[0-9]/.test(char)) {
-                elements.push(<span key={`hex-${i}`} style={{ color: '#00FF66' }}>{char}</span>);
+                elements.push(
+                    <span key={`hex-${i}`} style={{ color: '#00FF66' }}>
+                        {char}
+                    </span>
+                );
             } else if (/[a-fA-F]/.test(char)) {
-                elements.push(<span key={`hex-${i}`} style={{ color: '#00E5FF' }}>{char}</span>);
+                elements.push(
+                    <span key={`hex-${i}`} style={{ color: '#00E5FF' }}>
+                        {char}
+                    </span>
+                );
             } else {
-                elements.push(<span key={`hex-${i}`} style={{ color: '#0066FF' }}>{char}</span>);
+                elements.push(
+                    <span key={`hex-${i}`} style={{ color: '#0066FF' }}>
+                        {char}
+                    </span>
+                );
             }
         }
     } else if (presetId === 'base64') {
@@ -206,13 +282,29 @@ function highlightTerminalText(text: string, presetId: string, isFocused: boolea
             const char = text[i];
             if (char === undefined) continue;
             if (/[A-Z]/.test(char)) {
-                elements.push(<span key={`b64-${i}`} style={{ color: '#00E5FF' }}>{char}</span>);
+                elements.push(
+                    <span key={`b64-${i}`} style={{ color: '#00E5FF' }}>
+                        {char}
+                    </span>
+                );
             } else if (/[a-z]/.test(char)) {
-                elements.push(<span key={`b64-${i}`} style={{ color: '#00FF66' }}>{char}</span>);
+                elements.push(
+                    <span key={`b64-${i}`} style={{ color: '#00FF66' }}>
+                        {char}
+                    </span>
+                );
             } else if (/[0-9]/.test(char) || char === '+' || char === '/' || char === '=') {
-                elements.push(<span key={`b64-${i}`} style={{ color: '#0066FF' }}>{char}</span>);
+                elements.push(
+                    <span key={`b64-${i}`} style={{ color: '#0066FF' }}>
+                        {char}
+                    </span>
+                );
             } else {
-                elements.push(<span key={`b64-${i}`} style={{ color: '#FFFFFF' }}>{char}</span>);
+                elements.push(
+                    <span key={`b64-${i}`} style={{ color: '#FFFFFF' }}>
+                        {char}
+                    </span>
+                );
             }
         }
     } else if (presetId === 'morse') {
@@ -220,13 +312,29 @@ function highlightTerminalText(text: string, presetId: string, isFocused: boolea
             const char = text[i];
             if (char === undefined) continue;
             if (char === '.') {
-                elements.push(<span key={`morse-${i}`} style={{ color: '#00E5FF', fontWeight: 'bold' }}>{char}</span>);
+                elements.push(
+                    <span key={`morse-${i}`} style={{ color: '#00E5FF', fontWeight: 'bold' }}>
+                        {char}
+                    </span>
+                );
             } else if (char === '-') {
-                elements.push(<span key={`morse-${i}`} style={{ color: '#00FF66', fontWeight: 'bold' }}>{char}</span>);
+                elements.push(
+                    <span key={`morse-${i}`} style={{ color: '#00FF66', fontWeight: 'bold' }}>
+                        {char}
+                    </span>
+                );
             } else if (char === '/' || char === ' ') {
-                elements.push(<span key={`morse-${i}`} style={{ color: '#0066FF', fontWeight: 'bold' }}>{char}</span>);
+                elements.push(
+                    <span key={`morse-${i}`} style={{ color: '#0066FF', fontWeight: 'bold' }}>
+                        {char}
+                    </span>
+                );
             } else {
-                elements.push(<span key={`morse-${i}`} style={{ color: '#FFFFFF' }}>{char}</span>);
+                elements.push(
+                    <span key={`morse-${i}`} style={{ color: '#FFFFFF' }}>
+                        {char}
+                    </span>
+                );
             }
         }
     } else {
@@ -234,18 +342,34 @@ function highlightTerminalText(text: string, presetId: string, isFocused: boolea
         tokens.forEach((token, i) => {
             if (!token) return;
             if (/^[0-9]+$/.test(token)) {
-                elements.push(<span key={`custom-${i}`} style={{ color: '#00E5FF' }}>{token}</span>);
+                elements.push(
+                    <span key={`custom-${i}`} style={{ color: '#00E5FF' }}>
+                        {token}
+                    </span>
+                );
             } else if (/^[a-zA-Z]+$/.test(token)) {
-                elements.push(<span key={`custom-${i}`} style={{ color: '#00FF66' }}>{token}</span>);
+                elements.push(
+                    <span key={`custom-${i}`} style={{ color: '#00FF66' }}>
+                        {token}
+                    </span>
+                );
             } else if (/^[{}":,\[\]]+$/.test(token)) {
-                elements.push(<span key={`custom-${i}`} style={{ color: '#0066FF' }}>{token}</span>);
+                elements.push(
+                    <span key={`custom-${i}`} style={{ color: '#0066FF' }}>
+                        {token}
+                    </span>
+                );
             } else {
-                elements.push(<span key={`custom-${i}`} style={{ color: '#FFFFFF' }}>{token}</span>);
+                elements.push(
+                    <span key={`custom-${i}`} style={{ color: '#FFFFFF' }}>
+                        {token}
+                    </span>
+                );
             }
         });
     }
 
-    if (isFocused) {
+    if (showCursor) {
         elements.push(<span key="cursor" className="terminal-cursor-block" />);
     }
 
@@ -262,8 +386,6 @@ export default function HomePage() {
     });
     const [isAutoTyping, setIsAutoTyping] = useState(true);
     const [activeStepIndex, setActiveStepIndex] = useState<number>(0);
-    const [cursorVisible, setCursorVisible] = useState(true);
-    const [isFocused, setIsFocused] = useState(false);
     const overlayRef = useRef<HTMLDivElement>(null);
 
     const handleCardMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -286,13 +408,6 @@ export default function HomePage() {
         return () => clearInterval(interval);
     }, [isHoveringWorkflow]);
 
-    useEffect(() => {
-        const timer = setInterval(() => {
-            setCursorVisible((prev) => !prev);
-        }, 530);
-        return () => clearInterval(timer);
-    }, []);
-
     useScrollReveal();
 
     useEffect(() => {
@@ -314,17 +429,12 @@ export default function HomePage() {
         setDemoInput('');
 
         const timer = setInterval(() => {
-            setDemoInput((prev) => {
-                if (currentIndex < defaultSample.length) {
-                    const nextVal = prev + defaultSample[currentIndex];
-                    currentIndex++;
-                    return nextVal;
-                } else {
-                    clearInterval(timer);
-                    setIsAutoTyping(false);
-                    return prev;
-                }
-            });
+            currentIndex++;
+            if (currentIndex >= defaultSample.length) {
+                clearInterval(timer);
+                setIsAutoTyping(false);
+            }
+            setDemoInput(defaultSample.slice(0, currentIndex));
         }, 12);
 
         return () => {
@@ -365,7 +475,8 @@ export default function HomePage() {
                     </h1>
                     <p className="home-subtitle">
                         Instantly detect, dissect, and visualize encoding layers in one beautiful,
-                        real-time workspace. Built for security analysts, developers, and researchers.
+                        real-time workspace. Built for security analysts, developers, and
+                        researchers.
                     </p>
 
                     <div className="home-cta-row">
@@ -385,7 +496,11 @@ export default function HomePage() {
                     <div className="home-meta-row">
                         <div className="home-meta-item">
                             <span className="home-meta-dot" />
-                            <span>18+ decoders</span>
+                            <span>
+                                {decoderCount !== null
+                                    ? `${decoderCount} decoders`
+                                    : '18+ decoders'}
+                            </span>
                         </div>
                         <div className="home-meta-item">
                             <span className="relative flex h-1.5 w-1.5">
@@ -417,8 +532,9 @@ export default function HomePage() {
                                     key={preset.id}
                                     type="button"
                                     onClick={() => selectPreset(preset)}
-                                    className={`preset-pill ${activePreset === preset.id ? 'is-active' : ''
-                                        }`}
+                                    className={`preset-pill ${
+                                        activePreset === preset.id ? 'is-active' : ''
+                                    }`}
                                 >
                                     {preset.label}
                                 </button>
@@ -428,14 +544,13 @@ export default function HomePage() {
                         <div className="demo-textarea-container">
                             <textarea
                                 className="demo-textarea"
+                                aria-label="Encoded string to decode"
                                 value={demoInput}
                                 onChange={(e) => {
                                     setIsAutoTyping(false);
                                     setActivePreset('custom');
                                     setDemoInput(e.target.value);
                                 }}
-                                onFocus={() => setIsFocused(true)}
-                                onBlur={() => setIsFocused(false)}
                                 onScroll={(e) => {
                                     if (overlayRef.current) {
                                         overlayRef.current.scrollTop = e.currentTarget.scrollTop;
@@ -444,8 +559,16 @@ export default function HomePage() {
                                 }}
                                 placeholder="Paste your encoded string here..."
                             />
-                            <div className="demo-textarea-overlay" ref={overlayRef} id="demo-textarea-overlay">
-                                {highlightTerminalText(demoInput, activePreset, isFocused || isAutoTyping)}
+                            <div
+                                className="demo-textarea-overlay"
+                                ref={overlayRef}
+                                id="demo-textarea-overlay"
+                            >
+                                {highlightTerminalText(
+                                    demoInput,
+                                    detectHighlightKind(demoInput),
+                                    isAutoTyping
+                                )}
                             </div>
                         </div>
 
@@ -459,26 +582,61 @@ export default function HomePage() {
                                                 <button
                                                     type="button"
                                                     disabled={activeStepIndex === 0}
-                                                    onClick={() => setActiveStepIndex((prev) => Math.max(0, prev - 1))}
+                                                    onClick={() =>
+                                                        setActiveStepIndex((prev) =>
+                                                            Math.max(0, prev - 1)
+                                                        )
+                                                    }
                                                     className="demo-paginator-btn"
                                                     title="Previous Step"
                                                 >
-                                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                                                    <svg
+                                                        className="w-3 h-3"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        strokeWidth="2.5"
+                                                        viewBox="0 0 24 24"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            d="M15.75 19.5L8.25 12l7.5-7.5"
+                                                        />
                                                     </svg>
                                                 </button>
                                                 <span className="demo-paginator-info">
-                                                    Step {activeStepIndex + 1} of {demoResult.steps.length}
+                                                    Step {activeStepIndex + 1} of{' '}
+                                                    {demoResult.steps.length}
                                                 </span>
                                                 <button
                                                     type="button"
-                                                    disabled={activeStepIndex === demoResult.steps.length - 1}
-                                                    onClick={() => setActiveStepIndex((prev) => Math.min(demoResult.steps.length - 1, prev + 1))}
+                                                    disabled={
+                                                        activeStepIndex ===
+                                                        demoResult.steps.length - 1
+                                                    }
+                                                    onClick={() =>
+                                                        setActiveStepIndex((prev) =>
+                                                            Math.min(
+                                                                demoResult.steps.length - 1,
+                                                                prev + 1
+                                                            )
+                                                        )
+                                                    }
                                                     className="demo-paginator-btn"
                                                     title="Next Step"
                                                 >
-                                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                                                    <svg
+                                                        className="w-3 h-3"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        strokeWidth="2.5"
+                                                        viewBox="0 0 24 24"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            d="M8.25 4.5l7.5 7.5-7.5 7.5"
+                                                        />
                                                     </svg>
                                                 </button>
                                             </div>
@@ -511,15 +669,23 @@ export default function HomePage() {
                                                 </div>
                                                 <div className="demo-step-confidence-container">
                                                     <div className="demo-step-confidence-header">
-                                                        <span className="demo-step-confidence-label">Confidence Rating</span>
+                                                        <span className="demo-step-confidence-label">
+                                                            Confidence Rating
+                                                        </span>
                                                         <span className="demo-step-confidence-value">
-                                                            {Math.round(demoResult.steps[activeStepIndex].confidence * 100)}%
+                                                            {Math.round(
+                                                                demoResult.steps[activeStepIndex]
+                                                                    .confidence * 100
+                                                            )}
+                                                            %
                                                         </span>
                                                     </div>
                                                     <div className="demo-step-confidence-bar-bg">
-                                                        <div 
+                                                        <div
                                                             className="demo-step-confidence-bar-fill"
-                                                            style={{ width: `${demoResult.steps[activeStepIndex].confidence * 100}%` }}
+                                                            style={{
+                                                                width: `${demoResult.steps[activeStepIndex].confidence * 100}%`,
+                                                            }}
                                                         />
                                                     </div>
                                                 </div>
@@ -540,20 +706,20 @@ export default function HomePage() {
                 </div>
             </section>
 
-
             <section id="features" className="mb-24 relative z-10">
                 <div className="text-center mb-16 reveal-on-scroll">
                     <h2 className="text-3xl md:text-5xl font-black text-white mb-4">
                         What makes Rasbur different
                     </h2>
                     <p className="text-neutral-400 max-w-xl mx-auto">
-                        Unified, high-performance workspace built specifically for security analysis and developers.
+                        Unified, high-performance workspace built specifically for security analysis
+                        and developers.
                     </p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {/* Card 1: Multi-layer Pipeline (Spans 2 columns) */}
-                    <div 
+                    <div
                         className="glow-card p-6 md:col-span-2 rounded-3xl border border-white/5 bg-neutral-950/40 text-left reveal-on-scroll stagger-1 flex flex-col justify-between"
                         onMouseMove={handleCardMouseMove}
                     >
@@ -563,12 +729,15 @@ export default function HomePage() {
                                 <div className="glow-card-icon-wrapper glow-card-icon-wrapper--purple">
                                     <Layers className="w-5 h-5" strokeWidth={1.8} />
                                 </div>
-                                <h3 className="text-lg font-bold text-white mb-2">Multi-layer Pipeline</h3>
+                                <h3 className="text-lg font-bold text-white mb-2">
+                                    Multi-layer Pipeline
+                                </h3>
                                 <p className="text-neutral-400 text-xs leading-relaxed max-w-md">
-                                    Sequentially apply decoders. View progress, layers, and confidence scores at each step.
+                                    Sequentially apply decoders. View progress, layers, and
+                                    confidence scores at each step.
                                 </p>
                             </div>
-                            
+
                             {/* Visual Layer Widget */}
                             <div className="bento-widget select-none shrink-0 self-stretch md:self-auto flex flex-col justify-between">
                                 <div className="bento-widget-header">
@@ -577,15 +746,25 @@ export default function HomePage() {
                                 </div>
                                 <div className="flex flex-col gap-2">
                                     <div className="flex items-center gap-2">
-                                        <span className="px-1 py-0.5 rounded bg-white/5 border border-white/10 text-neutral-400 text-[9px]">01</span>
+                                        <span className="px-1 py-0.5 rounded bg-white/5 border border-white/10 text-neutral-400 text-[9px]">
+                                            01
+                                        </span>
                                         <span className="text-neutral-200">Base64 Decode</span>
-                                        <span className="text-purple-400 ml-auto font-bold font-mono">100%</span>
+                                        <span className="text-purple-400 ml-auto font-bold font-mono">
+                                            100%
+                                        </span>
                                     </div>
-                                    <div className="text-neutral-600 pl-4 font-mono text-[9px] leading-3">↓</div>
+                                    <div className="text-neutral-600 pl-4 font-mono text-[9px] leading-3">
+                                        ↓
+                                    </div>
                                     <div className="flex items-center gap-2">
-                                        <span className="px-1 py-0.5 rounded bg-white/5 border border-white/10 text-neutral-400 text-[9px]">02</span>
+                                        <span className="px-1 py-0.5 rounded bg-white/5 border border-white/10 text-neutral-400 text-[9px]">
+                                            02
+                                        </span>
                                         <span className="text-neutral-200">Hex Payload</span>
-                                        <span className="text-cyan-400 ml-auto font-bold font-mono">98%</span>
+                                        <span className="text-cyan-400 ml-auto font-bold font-mono">
+                                            98%
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -593,45 +772,125 @@ export default function HomePage() {
                     </div>
 
                     {/* Card 2: Auto-detection (Spans 1 column) */}
-                    <div 
+                    <div
                         className="glow-card p-6 md:col-span-1 rounded-3xl border border-white/5 bg-neutral-950/40 text-left reveal-on-scroll stagger-2 flex flex-col justify-between"
                         onMouseMove={handleCardMouseMove}
                     >
                         <div className="glow-card-glow" />
-                        <div className="relative z-10 flex flex-col h-full justify-between">
+                        <div className="relative z-10 flex flex-col h-full justify-between gap-5">
                             <div>
                                 <div className="glow-card-icon-wrapper glow-card-icon-wrapper--green">
                                     <Cpu className="w-5 h-5" strokeWidth={1.8} />
                                 </div>
-                                <h3 className="text-lg font-bold text-white mb-2">Auto-detection</h3>
+                                <h3 className="text-lg font-bold text-white mb-2">
+                                    Auto-detection
+                                </h3>
                                 <p className="text-neutral-400 text-xs leading-relaxed">
-                                    Paste raw payloads and let our multi-layer analyzer automatically detect candidates.
+                                    Paste raw payloads and let our multi-layer analyzer
+                                    automatically detect candidates.
                                 </p>
+                            </div>
+
+                            {/* Confidence Ranking Widget */}
+                            <div className="bento-widget select-none">
+                                <div className="bento-widget-header">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                    <span>Candidates ranked</span>
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-neutral-200 w-12 shrink-0">
+                                            Base64
+                                        </span>
+                                        <div className="flex-1 h-1 rounded-full bg-white/5 overflow-hidden">
+                                            <div
+                                                className="h-full rounded-full bg-emerald-400/80"
+                                                style={{ width: '95%' }}
+                                            />
+                                        </div>
+                                        <span className="text-emerald-400 font-bold font-mono">
+                                            0.95
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-neutral-200 w-12 shrink-0">Hex</span>
+                                        <div className="flex-1 h-1 rounded-full bg-white/5 overflow-hidden">
+                                            <div
+                                                className="h-full rounded-full bg-cyan-400/70"
+                                                style={{ width: '41%' }}
+                                            />
+                                        </div>
+                                        <span className="text-cyan-400 font-bold font-mono">
+                                            0.41
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-neutral-200 w-12 shrink-0">
+                                            ROT13
+                                        </span>
+                                        <div className="flex-1 h-1 rounded-full bg-white/5 overflow-hidden">
+                                            <div
+                                                className="h-full rounded-full bg-neutral-600"
+                                                style={{ width: '8%' }}
+                                            />
+                                        </div>
+                                        <span className="text-neutral-500 font-bold font-mono">
+                                            0.08
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     {/* Card 3: Live WebSocket (Spans 1 column) */}
-                    <div 
+                    <div
                         className="glow-card p-6 md:col-span-1 rounded-3xl border border-white/5 bg-neutral-950/40 text-left reveal-on-scroll stagger-3 flex flex-col justify-between"
                         onMouseMove={handleCardMouseMove}
                     >
                         <div className="glow-card-glow" />
-                        <div className="relative z-10 flex flex-col h-full justify-between">
+                        <div className="relative z-10 flex flex-col h-full justify-between gap-5">
                             <div>
                                 <div className="glow-card-icon-wrapper glow-card-icon-wrapper--amber">
                                     <Radio className="w-5 h-5" strokeWidth={1.8} />
                                 </div>
-                                <h3 className="text-lg font-bold text-white mb-2">Live WebSocket</h3>
+                                <h3 className="text-lg font-bold text-white mb-2">
+                                    Live WebSocket
+                                </h3>
                                 <p className="text-neutral-400 text-xs leading-relaxed">
-                                    Watch decoding happen instantly as you type with real-time stream integration.
+                                    Watch decoding happen instantly as you type with real-time
+                                    stream integration.
                                 </p>
+                            </div>
+
+                            {/* Socket Event Stream Widget */}
+                            <div className="bento-widget select-none font-mono">
+                                <div className="bento-widget-header">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                                    <span>socket.io</span>
+                                </div>
+                                <div className="flex flex-col gap-1.5 text-[10px]">
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="text-cyan-400 font-bold">→</span>
+                                        <span className="text-neutral-200">decode:live</span>
+                                        <span className="text-neutral-600 truncate">
+                                            "NDg2NTZj..."
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="text-emerald-400 font-bold">←</span>
+                                        <span className="text-neutral-200">ok</span>
+                                        <span className="text-neutral-600">
+                                            · Base64 → Hex · 2 steps
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     {/* Card 4: REST API (Spans 2 columns) */}
-                    <div 
+                    <div
                         className="glow-card p-6 md:col-span-2 rounded-3xl border border-white/5 bg-neutral-950/40 text-left reveal-on-scroll stagger-4 flex flex-col justify-between"
                         onMouseMove={handleCardMouseMove}
                     >
@@ -643,10 +902,11 @@ export default function HomePage() {
                                 </div>
                                 <h3 className="text-lg font-bold text-white mb-2">REST API</h3>
                                 <p className="text-neutral-400 text-xs leading-relaxed max-w-md">
-                                    Integrate high-speed, secure server-side decoding capabilities directly into your workflows.
+                                    Integrate high-speed, secure server-side decoding capabilities
+                                    directly into your workflows.
                                 </p>
                             </div>
-                            
+
                             {/* API Mockup Widget */}
                             <div className="bento-widget select-none shrink-0 self-stretch md:self-auto flex flex-col justify-between font-mono">
                                 <div className="bento-widget-header">
@@ -654,10 +914,141 @@ export default function HomePage() {
                                     <span>POST /api/decode</span>
                                 </div>
                                 <div className="flex flex-col gap-1 text-[10px]">
-                                    <div><span className="text-neutral-500">{"{"}</span></div>
-                                    <div className="pl-3"><span className="text-emerald-400 font-bold">"type"</span><span className="text-neutral-500">:</span> <span className="text-amber-400">"jwt"</span><span className="text-neutral-500">,</span></div>
-                                    <div className="pl-3"><span className="text-emerald-400 font-bold">"valid"</span><span className="text-neutral-500">:</span> <span className="text-blue-400 font-bold">true</span></div>
-                                    <div><span className="text-neutral-500">{"}"}</span></div>
+                                    <div>
+                                        <span className="text-neutral-500">{'{'}</span>
+                                    </div>
+                                    <div className="pl-3">
+                                        <span className="text-emerald-400 font-bold">"type"</span>
+                                        <span className="text-neutral-500">:</span>{' '}
+                                        <span className="text-amber-400">"jwt"</span>
+                                        <span className="text-neutral-500">,</span>
+                                    </div>
+                                    <div className="pl-3">
+                                        <span className="text-emerald-400 font-bold">"valid"</span>
+                                        <span className="text-neutral-500">:</span>{' '}
+                                        <span className="text-blue-400 font-bold">true</span>
+                                    </div>
+                                    <div>
+                                        <span className="text-neutral-500">{'}'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Card 5: Shareable Results */}
+                    <div
+                        className="glow-card p-6 md:col-span-1 rounded-3xl border border-white/5 bg-neutral-950/40 text-left reveal-on-scroll stagger-1 flex flex-col justify-between"
+                        onMouseMove={handleCardMouseMove}
+                    >
+                        <div className="glow-card-glow" />
+                        <div className="relative z-10 flex flex-col h-full justify-between gap-5">
+                            <div>
+                                <div className="glow-card-icon-wrapper glow-card-icon-wrapper--blue">
+                                    <Share2 className="w-5 h-5" strokeWidth={1.8} />
+                                </div>
+                                <h3 className="text-lg font-bold text-white mb-2">
+                                    Shareable Results
+                                </h3>
+                                <p className="text-neutral-400 text-xs leading-relaxed">
+                                    Turn any decode into a public link with the full pipeline
+                                    attached. Links expire automatically.
+                                </p>
+                            </div>
+
+                            {/* Share Link Widget */}
+                            <div className="bento-widget select-none font-mono">
+                                <div className="bento-widget-header">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+                                    <span>Public link</span>
+                                </div>
+                                <div className="flex items-center justify-between gap-2 text-[10px]">
+                                    <span className="text-neutral-200 truncate">
+                                        rasbur.vercel.app/s/k3x9q2
+                                    </span>
+                                    <span className="text-neutral-500 shrink-0 px-1.5 py-0.5 rounded bg-white/5 border border-white/10">
+                                        30d
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Card 6: Visual Compare */}
+                    <div
+                        className="glow-card p-6 md:col-span-1 rounded-3xl border border-white/5 bg-neutral-950/40 text-left reveal-on-scroll stagger-2 flex flex-col justify-between"
+                        onMouseMove={handleCardMouseMove}
+                    >
+                        <div className="glow-card-glow" />
+                        <div className="relative z-10 flex flex-col h-full justify-between gap-5">
+                            <div>
+                                <div className="glow-card-icon-wrapper glow-card-icon-wrapper--purple">
+                                    <GitCompareArrows className="w-5 h-5" strokeWidth={1.8} />
+                                </div>
+                                <h3 className="text-lg font-bold text-white mb-2">
+                                    Visual Compare
+                                </h3>
+                                <p className="text-neutral-400 text-xs leading-relaxed">
+                                    Decode two payloads side by side with a character-level diff of
+                                    the outputs.
+                                </p>
+                            </div>
+
+                            {/* Char Diff Widget */}
+                            <div className="bento-widget select-none font-mono">
+                                <div className="bento-widget-header">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse"></span>
+                                    <span>Output diff</span>
+                                </div>
+                                <div className="flex flex-col gap-1.5 text-[10px]">
+                                    <div className="text-neutral-200">
+                                        admin<span className="diff-char-removed">=false</span>
+                                    </div>
+                                    <div className="text-neutral-200">
+                                        admin<span className="diff-char-added">=true</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Card 7: API Keys & Limits */}
+                    <div
+                        className="glow-card p-6 md:col-span-1 rounded-3xl border border-white/5 bg-neutral-950/40 text-left reveal-on-scroll stagger-3 flex flex-col justify-between"
+                        onMouseMove={handleCardMouseMove}
+                    >
+                        <div className="glow-card-glow" />
+                        <div className="relative z-10 flex flex-col h-full justify-between gap-5">
+                            <div>
+                                <div className="glow-card-icon-wrapper glow-card-icon-wrapper--amber">
+                                    <KeyRound className="w-5 h-5" strokeWidth={1.8} />
+                                </div>
+                                <h3 className="text-lg font-bold text-white mb-2">
+                                    API Keys & Limits
+                                </h3>
+                                <p className="text-neutral-400 text-xs leading-relaxed">
+                                    Issue scoped keys, track usage per key, and stay inside
+                                    transparent daily rate limits.
+                                </p>
+                            </div>
+
+                            {/* Key Usage Widget */}
+                            <div className="bento-widget select-none font-mono">
+                                <div className="bento-widget-header">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                                    <span>X-API-Key: ••••••••••</span>
+                                </div>
+                                <div className="flex flex-col gap-1.5 text-[10px]">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-neutral-200">Usage today</span>
+                                        <span className="text-amber-400 font-bold">62 / 100</span>
+                                    </div>
+                                    <div className="h-1 rounded-full bg-white/5 overflow-hidden">
+                                        <div
+                                            className="h-full rounded-full bg-amber-400/70"
+                                            style={{ width: '62%' }}
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -676,51 +1067,63 @@ export default function HomePage() {
                     {/* Animated moving dashed connector line for desktop */}
                     <div className="hidden md:block workflow-connector-glow" />
                     <div className="hidden md:block workflow-connector-line" />
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
                         {/* Step 1: Paste */}
-                        <div 
+                        <div
                             onMouseEnter={() => {
                                 setActiveWorkflowStep(0);
                                 setIsHoveringWorkflow(true);
                             }}
                             onMouseLeave={() => setIsHoveringWorkflow(false)}
                             className={`workflow-step-card p-6 rounded-2xl text-left transition-all duration-500 border ${
-                                activeWorkflowStep === 0 
-                                    ? 'border-[#0066FF]/30 bg-neutral-950/70 shadow-[0_0_20px_rgba(0,102,255,0.04)]' 
+                                activeWorkflowStep === 0
+                                    ? 'border-[#0066FF]/30 bg-neutral-950/70 shadow-[0_0_20px_rgba(0,102,255,0.04)]'
                                     : 'border-white/5 bg-neutral-950/20 opacity-70'
                             }`}
                         >
                             <div className="flex items-center justify-between mb-4">
                                 <div className="flex items-center gap-3">
                                     {/* Glowing Step Number Circle */}
-                                    <div className={`w-9 h-9 rounded-full font-mono font-bold text-xs flex items-center justify-center transition-all duration-500 ${
-                                        activeWorkflowStep === 0 
-                                            ? 'bg-[#0066FF] text-white shadow-[0_0_15px_rgba(0,102,255,0.35)]' 
-                                            : 'bg-white/5 text-neutral-400 border border-white/10'
-                                    }`}>
+                                    <div
+                                        className={`w-9 h-9 rounded-full font-mono font-bold text-xs flex items-center justify-center transition-all duration-500 ${
+                                            activeWorkflowStep === 0
+                                                ? 'bg-[#0066FF] text-white shadow-[0_0_15px_rgba(0,102,255,0.35)]'
+                                                : 'bg-white/5 text-neutral-400 border border-white/10'
+                                        }`}
+                                    >
                                         01
                                     </div>
                                     <h4 className="text-base font-bold text-white">Paste</h4>
                                 </div>
-                                
+
                                 {/* Pulsing status dot */}
                                 <div className="relative flex h-2 w-2">
-                                    <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
-                                        activeWorkflowStep === 0 ? 'bg-[#0066FF]' : 'bg-transparent'
-                                    }`}></span>
-                                    <span className={`relative inline-flex rounded-full h-2 w-2 ${
-                                        activeWorkflowStep === 0 ? 'bg-[#0066FF]' : 'bg-neutral-700'
-                                    }`}></span>
+                                    <span
+                                        className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                                            activeWorkflowStep === 0
+                                                ? 'bg-[#0066FF]'
+                                                : 'bg-transparent'
+                                        }`}
+                                    ></span>
+                                    <span
+                                        className={`relative inline-flex rounded-full h-2 w-2 ${
+                                            activeWorkflowStep === 0
+                                                ? 'bg-[#0066FF]'
+                                                : 'bg-neutral-700'
+                                        }`}
+                                    ></span>
                                 </div>
                             </div>
 
                             <div className="flex items-start gap-3">
-                                <div className={`p-2 rounded-lg border transition-all duration-500 shrink-0 ${
-                                    activeWorkflowStep === 0
-                                        ? 'bg-[#0066FF]/10 border-[#0066FF]/20 text-[#60a5fa]'
-                                        : 'bg-white/5 border-white/10 text-neutral-400'
-                                }`}>
+                                <div
+                                    className={`p-2 rounded-lg border transition-all duration-500 shrink-0 ${
+                                        activeWorkflowStep === 0
+                                            ? 'bg-[#0066FF]/10 border-[#0066FF]/20 text-[#60a5fa]'
+                                            : 'bg-white/5 border-white/10 text-neutral-400'
+                                    }`}
+                                >
                                     <Clipboard className="w-4 h-4" strokeWidth={1.8} />
                                 </div>
                                 <p className="text-neutral-400 text-xs leading-relaxed mt-1">
@@ -730,208 +1133,132 @@ export default function HomePage() {
                         </div>
 
                         {/* Step 2: Detect */}
-                        <div 
+                        <div
                             onMouseEnter={() => {
                                 setActiveWorkflowStep(1);
                                 setIsHoveringWorkflow(true);
                             }}
                             onMouseLeave={() => setIsHoveringWorkflow(false)}
                             className={`workflow-step-card p-6 rounded-2xl text-left transition-all duration-500 border ${
-                                activeWorkflowStep === 1 
-                                    ? 'border-[#00E5FF]/30 bg-neutral-950/70 shadow-[0_0_20px_rgba(0,229,255,0.04)]' 
+                                activeWorkflowStep === 1
+                                    ? 'border-[#00E5FF]/30 bg-neutral-950/70 shadow-[0_0_20px_rgba(0,229,255,0.04)]'
                                     : 'border-white/5 bg-neutral-950/20 opacity-70'
                             }`}
                         >
                             <div className="flex items-center justify-between mb-4">
                                 <div className="flex items-center gap-3">
                                     {/* Glowing Step Number Circle */}
-                                    <div className={`w-9 h-9 rounded-full font-mono font-bold text-xs flex items-center justify-center transition-all duration-500 ${
-                                        activeWorkflowStep === 1 
-                                            ? 'bg-[#00E5FF] text-black shadow-[0_0_15px_rgba(0,229,255,0.35)]' 
-                                            : 'bg-white/5 text-neutral-400 border border-white/10'
-                                    }`}>
+                                    <div
+                                        className={`w-9 h-9 rounded-full font-mono font-bold text-xs flex items-center justify-center transition-all duration-500 ${
+                                            activeWorkflowStep === 1
+                                                ? 'bg-[#00E5FF] text-black shadow-[0_0_15px_rgba(0,229,255,0.35)]'
+                                                : 'bg-white/5 text-neutral-400 border border-white/10'
+                                        }`}
+                                    >
                                         02
                                     </div>
                                     <h4 className="text-base font-bold text-white">Detect</h4>
                                 </div>
-                                
+
                                 {/* Pulsing status dot */}
                                 <div className="relative flex h-2 w-2">
-                                    <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
-                                        activeWorkflowStep === 1 ? 'bg-[#00E5FF]' : 'bg-transparent'
-                                    }`}></span>
-                                    <span className={`relative inline-flex rounded-full h-2 w-2 ${
-                                        activeWorkflowStep === 1 ? 'bg-[#00E5FF]' : 'bg-neutral-700'
-                                    }`}></span>
+                                    <span
+                                        className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                                            activeWorkflowStep === 1
+                                                ? 'bg-[#00E5FF]'
+                                                : 'bg-transparent'
+                                        }`}
+                                    ></span>
+                                    <span
+                                        className={`relative inline-flex rounded-full h-2 w-2 ${
+                                            activeWorkflowStep === 1
+                                                ? 'bg-[#00E5FF]'
+                                                : 'bg-neutral-700'
+                                        }`}
+                                    ></span>
                                 </div>
                             </div>
 
                             <div className="flex items-start gap-3">
-                                <div className={`p-2 rounded-lg border transition-all duration-500 shrink-0 ${
-                                    activeWorkflowStep === 1
-                                        ? 'bg-[#00E5FF]/10 border-[#00E5FF]/20 text-[#00E5FF]'
-                                        : 'bg-white/5 border-white/10 text-neutral-400'
-                                }`}>
+                                <div
+                                    className={`p-2 rounded-lg border transition-all duration-500 shrink-0 ${
+                                        activeWorkflowStep === 1
+                                            ? 'bg-[#00E5FF]/10 border-[#00E5FF]/20 text-[#00E5FF]'
+                                            : 'bg-white/5 border-white/10 text-neutral-400'
+                                    }`}
+                                >
                                     <Search className="w-4 h-4" strokeWidth={1.8} />
                                 </div>
                                 <p className="text-neutral-400 text-xs leading-relaxed mt-1">
-                                    Rasbur ranks likely encoding patterns and structures dynamically.
+                                    Rasbur ranks likely encoding patterns and structures
+                                    dynamically.
                                 </p>
                             </div>
                         </div>
 
                         {/* Step 3: Decode */}
-                        <div 
+                        <div
                             onMouseEnter={() => {
                                 setActiveWorkflowStep(2);
                                 setIsHoveringWorkflow(true);
                             }}
                             onMouseLeave={() => setIsHoveringWorkflow(false)}
                             className={`workflow-step-card p-6 rounded-2xl text-left transition-all duration-500 border ${
-                                activeWorkflowStep === 2 
-                                    ? 'border-[#0066FF]/30 bg-neutral-950/70 shadow-[0_0_20px_rgba(0,102,255,0.04)]' 
+                                activeWorkflowStep === 2
+                                    ? 'border-[#0066FF]/30 bg-neutral-950/70 shadow-[0_0_20px_rgba(0,102,255,0.04)]'
                                     : 'border-white/5 bg-neutral-950/20 opacity-70'
                             }`}
                         >
                             <div className="flex items-center justify-between mb-4">
                                 <div className="flex items-center gap-3">
                                     {/* Glowing Step Number Circle */}
-                                    <div className={`w-9 h-9 rounded-full font-mono font-bold text-xs flex items-center justify-center transition-all duration-500 ${
-                                        activeWorkflowStep === 2 
-                                            ? 'bg-[#0066FF] text-white shadow-[0_0_15px_rgba(0,102,255,0.35)]' 
-                                            : 'bg-white/5 text-neutral-400 border border-white/10'
-                                    }`}>
+                                    <div
+                                        className={`w-9 h-9 rounded-full font-mono font-bold text-xs flex items-center justify-center transition-all duration-500 ${
+                                            activeWorkflowStep === 2
+                                                ? 'bg-[#0066FF] text-white shadow-[0_0_15px_rgba(0,102,255,0.35)]'
+                                                : 'bg-white/5 text-neutral-400 border border-white/10'
+                                        }`}
+                                    >
                                         03
                                     </div>
                                     <h4 className="text-base font-bold text-white">Decode</h4>
                                 </div>
-                                
+
                                 {/* Pulsing status dot */}
                                 <div className="relative flex h-2 w-2">
-                                    <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
-                                        activeWorkflowStep === 2 ? 'bg-[#0066FF]' : 'bg-transparent'
-                                    }`}></span>
-                                    <span className={`relative inline-flex rounded-full h-2 w-2 ${
-                                        activeWorkflowStep === 2 ? 'bg-[#0066FF]' : 'bg-neutral-700'
-                                    }`}></span>
+                                    <span
+                                        className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                                            activeWorkflowStep === 2
+                                                ? 'bg-[#0066FF]'
+                                                : 'bg-transparent'
+                                        }`}
+                                    ></span>
+                                    <span
+                                        className={`relative inline-flex rounded-full h-2 w-2 ${
+                                            activeWorkflowStep === 2
+                                                ? 'bg-[#0066FF]'
+                                                : 'bg-neutral-700'
+                                        }`}
+                                    ></span>
                                 </div>
                             </div>
 
                             <div className="flex items-start gap-3">
-                                <div className={`p-2 rounded-lg border transition-all duration-500 shrink-0 ${
-                                    activeWorkflowStep === 2
-                                        ? 'bg-[#0066FF]/10 border-[#0066FF]/20 text-[#60a5fa]'
-                                        : 'bg-white/5 border-white/10 text-neutral-400'
-                                }`}>
+                                <div
+                                    className={`p-2 rounded-lg border transition-all duration-500 shrink-0 ${
+                                        activeWorkflowStep === 2
+                                            ? 'bg-[#0066FF]/10 border-[#0066FF]/20 text-[#60a5fa]'
+                                            : 'bg-white/5 border-white/10 text-neutral-400'
+                                    }`}
+                                >
                                     <Code className="w-4 h-4" strokeWidth={1.8} />
                                 </div>
                                 <p className="text-neutral-400 text-xs leading-relaxed mt-1">
-                                    Execute pipelines with complete transparency and extract clean data.
+                                    Execute pipelines with complete transparency and extract clean
+                                    data.
                                 </p>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </section>
-
-            <section id="pricing" className="mb-24 relative z-10">
-                <div className="text-center mb-16 reveal-on-scroll">
-                    <h2 className="text-3xl md:text-5xl font-black text-white mb-4">
-                        Simple, transparent pricing
-                    </h2>
-                    <p className="text-neutral-400 max-w-xl mx-auto">
-                        Start for free and upgrade as your team scales. No hidden charges.
-                    </p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-                    <div className="glow-card border border-white/5 bg-neutral-950/40 p-8 rounded-3xl text-left flex flex-col justify-between reveal-on-scroll stagger-1">
-                        <div>
-                            <div className="flex justify-between items-center mb-4">
-                                <h3 className="text-lg font-bold text-white">Free Tier</h3>
-                                <span className="text-xs font-bold text-neutral-500 uppercase tracking-widest">Base</span>
-                            </div>
-                            <div className="mb-6">
-                                <span className="text-3xl font-black text-white">$0</span>
-                                <span className="text-neutral-500 text-xs"> / month</span>
-                            </div>
-                            <p className="text-neutral-400 text-xs mb-6">
-                                Perfect for developers debugging payloads occasionally.
-                            </p>
-                            <div className="border-t border-white/5 pt-6 mb-8">
-                                <ul className="space-y-3">
-                                    <li className="flex items-center gap-2 text-xs text-neutral-300">
-                                        <svg className="w-3.5 h-3.5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                        </svg>
-                                        100 requests per day
-                                    </li>
-                                    <li className="flex items-center gap-2 text-xs text-neutral-300">
-                                        <svg className="w-3.5 h-3.5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                        </svg>
-                                        Access to 18+ decoders
-                                    </li>
-                                    <li className="flex items-center gap-2 text-xs text-neutral-300">
-                                        <svg className="w-3.5 h-3.5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                        </svg>
-                                        Real-time interactive sandbox
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                        <Link className="text-center w-full bg-neutral-900 hover:bg-neutral-850 border border-white/10 hover:border-white/15 text-white font-bold py-2.5 rounded-full text-xs" to="/decode">
-                            Start for Free
-                        </Link>
-                    </div>
-
-                    <div className="glow-card border border-white/15 bg-neutral-950/65 p-8 rounded-3xl text-left flex flex-col justify-between relative overflow-hidden reveal-on-scroll stagger-2 pricing-card--pro">
-                        <div className="pricing-card-highlight-glow" />
-                        <div>
-                            <div className="flex justify-between items-center mb-4">
-                                <h3 className="text-lg font-bold text-white">Pro Tier</h3>
-                                <span className="text-xs font-bold text-white bg-white/10 px-2.5 py-0.5 rounded-full uppercase tracking-wider">Popular</span>
-                            </div>
-                            <div className="mb-6">
-                                <span className="text-3xl font-black text-white">$19</span>
-                                <span className="text-neutral-500 text-xs"> / month</span>
-                            </div>
-                            <p className="text-neutral-400 text-xs mb-6">
-                                Built for power users and security teams handling continuous analysis.
-                            </p>
-                            <div className="border-t border-white/5 pt-6 mb-8">
-                                <ul className="space-y-3">
-                                    <li className="flex items-center gap-2 text-xs text-neutral-300">
-                                        <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                        </svg>
-                                        Unlimited daily requests
-                                    </li>
-                                    <li className="flex items-center gap-2 text-xs text-neutral-300">
-                                        <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                        </svg>
-                                        Full REST API access
-                                    </li>
-                                    <li className="flex items-center gap-2 text-xs text-neutral-300">
-                                        <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                        </svg>
-                                        WebSocket stream integration
-                                    </li>
-                                    <li className="flex items-center gap-2 text-xs text-neutral-300">
-                                        <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                        </svg>
-                                        Priority email support
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                        <Link className="pricing-card-pro-btn text-center w-full font-bold py-2.5 rounded-full text-xs" to="/decode">
-                            Upgrade to Pro
-                        </Link>
                     </div>
                 </div>
             </section>
@@ -943,10 +1270,14 @@ export default function HomePage() {
                         Ready to dissect payloads?
                     </h2>
                     <p className="text-neutral-500 text-sm md:text-base mb-8 max-w-xl mx-auto">
-                        Try the workspace now. Fully interactive decoder capabilities are live and ready to use.
+                        Try the workspace now. Fully interactive decoder capabilities are live and
+                        ready to use.
                     </p>
                     <div className="flex justify-center">
-                        <Link className="cta-pulse-btn px-8 py-3.5 rounded-full text-base font-bold transition-all duration-300" to="/decode">
+                        <Link
+                            className="cta-pulse-btn px-8 py-3.5 rounded-full text-base font-bold transition-all duration-300"
+                            to="/decode"
+                        >
                             Start Decoding Now
                         </Link>
                     </div>
@@ -958,7 +1289,9 @@ export default function HomePage() {
                     {/* Brand Column */}
                     <div className="flex flex-col gap-3">
                         <Link className="flex items-center gap-2 no-underline" to="/">
-                            <span className="app-brand-name text-lg font-bold text-white tracking-tight">Rasbur</span>
+                            <span className="app-brand-name text-lg font-bold text-white tracking-tight">
+                                Rasbur
+                            </span>
                         </Link>
                         <p className="text-neutral-500 text-sm leading-relaxed">
                             Intelligent string decoding platform.
@@ -967,26 +1300,34 @@ export default function HomePage() {
 
                     {/* Product Column */}
                     <div>
-                        <h4 className="text-white text-xs font-semibold uppercase tracking-wider mb-4">Product</h4>
+                        <h4 className="text-white text-xs font-semibold uppercase tracking-wider mb-4">
+                            Product
+                        </h4>
                         <ul className="flex flex-col gap-2.5 list-none p-0 m-0">
                             <li>
-                                <Link className="footer-link text-neutral-400 hover:text-white text-sm transition-colors duration-200 no-underline" to="/decode">
+                                <Link
+                                    className="footer-link text-neutral-400 hover:text-white text-sm transition-colors duration-200 no-underline"
+                                    to="/decode"
+                                >
                                     Workspace
                                 </Link>
                             </li>
                             <li>
-                                <Link className="footer-link text-neutral-400 hover:text-white text-sm transition-colors duration-200 no-underline" to="/decode">
+                                <a
+                                    className="footer-link text-neutral-400 hover:text-white text-sm transition-colors duration-200 no-underline"
+                                    href="https://github.com/omanshchoudhary/rasbur/tree/main/apps/cli"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
                                     CLI Tool
-                                </Link>
+                                </a>
                             </li>
                             <li>
-                                <Link className="footer-link text-neutral-400 hover:text-white text-sm transition-colors duration-200 no-underline" to="/docs">
+                                <Link
+                                    className="footer-link text-neutral-400 hover:text-white text-sm transition-colors duration-200 no-underline"
+                                    to="/docs"
+                                >
                                     API Reference
-                                </Link>
-                            </li>
-                            <li>
-                                <Link className="footer-link text-neutral-400 hover:text-white text-sm transition-colors duration-200 no-underline" to="/#pricing">
-                                    Pricing
                                 </Link>
                             </li>
                         </ul>
@@ -994,37 +1335,60 @@ export default function HomePage() {
 
                     {/* Resources Column */}
                     <div>
-                        <h4 className="text-white text-xs font-semibold uppercase tracking-wider mb-4">Resources</h4>
+                        <h4 className="text-white text-xs font-semibold uppercase tracking-wider mb-4">
+                            Resources
+                        </h4>
                         <ul className="flex flex-col gap-2.5 list-none p-0 m-0">
                             <li>
-                                <Link className="footer-link text-neutral-400 hover:text-white text-sm transition-colors duration-200 no-underline" to="/docs">
+                                <Link
+                                    className="footer-link text-neutral-400 hover:text-white text-sm transition-colors duration-200 no-underline"
+                                    to="/docs"
+                                >
                                     Documentation
                                 </Link>
                             </li>
                             <li>
-                                <a className="footer-link text-neutral-400 hover:text-white text-sm transition-colors duration-200 no-underline" href="https://github.com" target="_blank" rel="noopener noreferrer">
+                                <a
+                                    className="footer-link text-neutral-400 hover:text-white text-sm transition-colors duration-200 no-underline"
+                                    href="https://github.com/omanshchoudhary/rasbur"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
                                     GitHub
                                 </a>
                             </li>
                             <li>
-                                <Link className="footer-link text-neutral-400 hover:text-white text-sm transition-colors duration-200 no-underline" to="/decode">
+                                <a
+                                    className="footer-link text-neutral-400 hover:text-white text-sm transition-colors duration-200 no-underline"
+                                    href="https://github.com/omanshchoudhary/rasbur/issues"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
                                     Support
-                                </Link>
+                                </a>
                             </li>
                         </ul>
                     </div>
 
                     {/* Legal Column */}
                     <div>
-                        <h4 className="text-white text-xs font-semibold uppercase tracking-wider mb-4">Legal</h4>
+                        <h4 className="text-white text-xs font-semibold uppercase tracking-wider mb-4">
+                            Legal
+                        </h4>
                         <ul className="flex flex-col gap-2.5 list-none p-0 m-0">
                             <li>
-                                <Link className="footer-link text-neutral-400 hover:text-white text-sm transition-colors duration-200 no-underline" to="/decode">
+                                <Link
+                                    className="footer-link text-neutral-400 hover:text-white text-sm transition-colors duration-200 no-underline"
+                                    to="/privacy"
+                                >
                                     Privacy Policy
                                 </Link>
                             </li>
                             <li>
-                                <Link className="footer-link text-neutral-400 hover:text-white text-sm transition-colors duration-200 no-underline" to="/decode">
+                                <Link
+                                    className="footer-link text-neutral-400 hover:text-white text-sm transition-colors duration-200 no-underline"
+                                    to="/terms"
+                                >
                                     Terms of Service
                                 </Link>
                             </li>
@@ -1034,13 +1398,13 @@ export default function HomePage() {
 
                 {/* Sub-footer row */}
                 <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-neutral-500">
-                    <div>
-                        &copy; 2026 Rasbur. All rights reserved.
-                    </div>
+                    <div>&copy; {new Date().getFullYear()} Rasbur. All rights reserved.</div>
                     <div className="flex items-center gap-2">
                         <span className="status-dot"></span>
                         <span>
-                            Live system status: Online {decoderCount !== null && `— Connected with ${decoderCount} system decoders`}
+                            Live system status: Online{' '}
+                            {decoderCount !== null &&
+                                `— Connected with ${decoderCount} system decoders`}
                         </span>
                     </div>
                 </div>
