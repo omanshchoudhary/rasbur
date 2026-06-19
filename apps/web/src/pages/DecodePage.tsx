@@ -218,10 +218,12 @@ export default function DecodePage() {
                 setDecodeSource(null);
             }
         }
-        setRequestState('loading');
-        setErrorMessage(null);
-
         const timeoutId = window.setTimeout(() => {
+            // Only enter the loading state once the debounce settles, otherwise the
+            // button flickers to "Decoding..." on every keystroke.
+            setRequestState('loading');
+            setErrorMessage(null);
+
             if (!socket || !isConnected) {
                 void runRestFallback();
                 return;
