@@ -5,9 +5,11 @@ import {
     BinaryDecoder,
     UrlDecoder,
     ROT13Decoder,
+    CaesarCipherDecoder,
     decodeRegistry,
     registerDecoders,
     decodePipeline,
+    plaintextScore,
 } from './index.js';
 
 describe('Base64Decoder', () => {
@@ -137,5 +139,111 @@ describe('DecodePipeline', () => {
         expect(result.matches[0]!.confidence).toBeGreaterThanOrEqual(
             result.matches[result.matches.length - 1]!.confidence
         );
+    });
+});
+
+describe('plaintextScore', () => {
+    it('rates real text highly', () => {
+        expect(plaintextScore('Hello World')).toBeGreaterThan(0.8);
+    });
+
+    it('rates JSON as acceptable structured output', () => {
+        expect(plaintextScore('{"key":"value"}')).toBeGreaterThan(0.6);
+    });
+
+    it('rejects high-byte mojibake', () => {
+        expect(plaintextScore('ÞÊÞ')).toBeLessThan(0.3);
+    });
+
+    it('rejects replacement-char garbage', () => {
+        expect(plaintextScore('��-')).toBeLessThan(0.2);
+    });
+
+    it('rejects control characters', () => {
+        expect(plaintextScore('i\x01\x02\x1d')).toBeLessThan(0.2);
+    });
+
+    it('returns 0 for empty input', () => {
+        expect(plaintextScore('')).toBe(0);
+    });
+});
+
+describe('CaesarCipherDecoder', () => {
+    const d = new CaesarCipherDecoder();
+
+    it('decodes shifted English back to plaintext', () => {
+        expect(d.decode('Khoor Zruog')).toContain('Hello World');
+    });
+
+    it('claims shifted English with confidence', () => {
+        expect(d.confidence('Khoor Zruog')).toBeGreaterThanOrEqual(0.65);
+    });
+
+    it('leaves plain English alone', () => {
+        expect(d.confidence('Hello World')).toBe(0);
+        expect(d.decode('Hello World')).toBeNull();
+    });
+
+    it('rejects gibberish where no shift helps', () => {
+        expect(d.confidence('qzkx vbnm jqzx')).toBe(0);
+    });
+});
+
+describe('HexDecoder 0x handling', () => {
+    const d = new HexDecoder();
+
+    it('strips per-byte 0x prefixes', () => {
+        expect(d.decode('0x48 0x65 0x6c 0x6c 0x6f')).toBe('Hello');
+    });
+
+    it('does not strip 0x from the middle of data', () => {
+        // "ab0xcd" is not valid hex once 0x stays in place
+        expect(d.confidence('ab0xcd')).toBe(0);
+    });
+});
+
+describe('DecodePipeline robustness', () => {
+    beforeAll(() => registerDecoders());
+
+    it('leaves ordinary words alone instead of emitting garbage', () => {
+        // each of these passes some decoder's input-shape check
+        // ("test" looks like Base64, "decade"/"cafe" look like hex)
+        for (const word of ['test', 'decade', 'cafe', 'added']) {
+            const result = decodePipeline.decode(word);
+            expect(result.steps).toHaveLength(0);
+            expect(result.finalOutput).toBe(word);
+        }
+    });
+
+    it('decodes a Base64 -> Hex layered payload', () => {
+        const layered = Buffer.from('48656c6c6f20526173627572').toString('base64');
+        const result = decodePipeline.decode(layered);
+        expect(result.finalOutput).toBe('Hello Rasbur');
+        expect(result.steps.map((s) => s.decoderName)).toEqual(['Base64', 'Hex']);
+    });
+
+    it('decodes deeply nested Base64 within maxDepth', () => {
+        let nested = 'Hello World';
+        for (let i = 0; i < 4; i++) {
+            nested = Buffer.from(nested).toString('base64');
+        }
+        const result = decodePipeline.decode(nested);
+        expect(result.finalOutput).toBe('Hello World');
+        expect(result.steps).toHaveLength(4);
+    });
+
+    it('respects the maxDepth option', () => {
+        let nested = 'Hello World';
+        for (let i = 0; i < 4; i++) {
+            nested = Buffer.from(nested).toString('base64');
+        }
+        const result = decodePipeline.decode(nested, { maxDepth: 2 });
+        expect(result.steps).toHaveLength(2);
+    });
+
+    it('reports quality-weighted confidence per step', () => {
+        const result = decodePipeline.decode('SGVsbG8gV29ybGQ=');
+        expect(result.steps[0]!.confidence).toBeGreaterThan(0.7);
+        expect(result.steps[0]!.confidence).toBeLessThanOrEqual(1);
     });
 });

@@ -3,18 +3,24 @@ import { Decoder } from '../base/Decoder.js';
 export class HexDecoder extends Decoder {
     readonly name = 'Hex';
 
+    // Strip "0x" only at the start of the string or of a separated token —
+    // the old global replace corrupted data like "ab0xcd".
+    private clean(input: string): string {
+        return input.replace(/(^|[\s:,-])0x/gi, '$1').replace(/[\s:\-,]/g, '');
+    }
+
     confidence(input: string): number {
         if (!input) return 0;
-        // Allows multiple format by cleaning them into proper hex format
-        const cleanInput = input.replace(/0x/gi, '').replace(/[\s:\-,]/g, '');
+        const cleanInput = this.clean(input);
 
         if (!/^[0-9A-Fa-f]+$/.test(cleanInput)) return 0;
 
         if (cleanInput.length % 2 !== 0) return 0;
 
-        if (cleanInput.length < 2) return 0;
+        // Fewer than 2 bytes is too ambiguous to claim
+        if (cleanInput.length < 4) return 0;
 
-        if (/0x/i.test(input)) return 0.95;
+        if (/^0x/i.test(input.trim())) return 0.95;
 
         if (/[\s:\-]/.test(input)) return 0.9;
 
@@ -23,7 +29,7 @@ export class HexDecoder extends Decoder {
 
     decode(input: string): string | null {
         try {
-            const cleanInput = input.replace(/0x/gi, '').replace(/[\s:\-,]/g, '');
+            const cleanInput = this.clean(input);
 
             if (cleanInput.length % 2 !== 0) return null;
 
@@ -32,9 +38,6 @@ export class HexDecoder extends Decoder {
                 const byte = parseInt(cleanInput.substring(i, i + 2), 16);
                 result += String.fromCharCode(byte);
             }
-            // If decoded output contains non-printable control characters, reject it.
-            if (/[\x00-\x08\x0E-\x1F]/.test(result)) return null;
-
             return result;
         } catch {
             return null;

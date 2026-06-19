@@ -17,17 +17,17 @@ export class Base64Decoder extends Decoder {
 
         if (cleanInput.endsWith('=')) return 0.9;
 
+        // Short unpadded strings ("test", "cool") are usually plain words,
+        // not Base64 — claim them only weakly and let output quality decide.
+        if (cleanInput.length < 8) return 0.4;
+
         return 0.8;
     }
 
     decode(input: string): string | null {
         try {
             const cleanInput = input.replace(/\s+/g, '');
-            const decoded = Buffer.from(cleanInput, 'base64').toString('utf-8');
-
-            if (/[\x00-\x08\x0E-\x1F]/.test(decoded)) return null;
-
-            return decoded;
+            return Buffer.from(cleanInput, 'base64').toString('utf-8');
         } catch {
             return null;
         }

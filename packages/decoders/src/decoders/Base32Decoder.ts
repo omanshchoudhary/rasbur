@@ -50,8 +50,6 @@ export class Base32Decoder extends Decoder {
 
             if (!result) return null;
 
-            if (/[\x00-\x08\x0E-\x1F]/.test(result)) return null;
-
             return result;
         } catch {
             return null;

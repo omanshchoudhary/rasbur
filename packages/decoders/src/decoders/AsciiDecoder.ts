@@ -36,8 +36,6 @@ export class AsciiDecoder extends Decoder {
 
             const result = numbers.map((n) => String.fromCharCode(n)).join('');
 
-            if (/[\x00-\x08\x0E-\x1F]/.test(result)) return null;
-
             return result;
         } catch {
             return null;

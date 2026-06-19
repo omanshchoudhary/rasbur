@@ -1,6 +1,7 @@
 export * from './base/Decoder.js';
 export * from './registry/decodeRegistry.js';
 export * from './pipeline/decodePipeline.js';
+export * from './utils/textScore.js';
 export * from './decoders/Base64Decoder.js';
 export * from './decoders/UrlDecoder.js';
 export * from './decoders/HexDecoder.js';
@@ -19,4 +20,4 @@ export * from './decoders/UnicodeEscapeDecoder.js';
 export * from './decoders/CaesarCipherDecoder.js';
 export * from './decoders/QuotedPrintableDecoder.js';
 export * from './decoders/JsonStringifyDecoder.js';
-export * from './registerDecoders.js'
+export * from './registerDecoders.js';
