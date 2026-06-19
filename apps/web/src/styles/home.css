@@ -527,8 +527,13 @@
     width: 100%;
     height: 100%;
     padding: 0.75rem;
-    background: transparent;
-    color: transparent;
+    /* The textarea sits on top of the highlighted overlay, so both its text and
+       background must stay transparent. WebKit/Blink can ignore `color: transparent`
+       on form fields (autofill, spellcheck), so -webkit-text-fill-color is set too.
+       !important guards against styles injected by extensions (e.g. Dark Reader). */
+    background: transparent !important;
+    color: transparent !important;
+    -webkit-text-fill-color: transparent !important;
     caret-color: #0066FF;
     font-family: var(--font-mono);
     font-size: 0.82rem;
