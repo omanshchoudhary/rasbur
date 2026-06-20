@@ -23,10 +23,12 @@ function extractToken(socket: Socket): string | null {
     return null;
 }
 
-export async function verifySocketUser(socket: Socket): Promise<SocketUser> {
+// Returns null for tokenless (anonymous) connections. A token that is present but
+// invalid still throws, so it is rejected rather than silently downgraded.
+export async function verifySocketUser(socket: Socket): Promise<SocketUser | null> {
     const token = extractToken(socket);
     if (!token) {
-        throw new Error('Missing auth token');
+        return null;
     }
 
     const publicKey = await publicKeyPromise;
@@ -49,7 +51,15 @@ export function attachSocketAuth(io: SocketIOServer): void {
     io.use(async (socket, next) => {
         try {
             const user = await verifySocketUser(socket);
-            socket.data.user = user;
+            if (user) {
+                socket.data.user = user;
+            } else {
+                // Anonymous connection: identify by IP so rate limiting and room
+                // scoping still apply. Real user ids are Mongo ObjectIds, so the
+                // `anon:` prefix can never collide with a signed-in user.
+                const ip = socket.handshake.address || 'unknown';
+                socket.data.user = { id: `anon:${ip}`, tier: 'anon' };
+            }
             next();
         } catch (error) {
             next(new Error('Unauthorized websocket connection'));

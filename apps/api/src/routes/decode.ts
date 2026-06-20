@@ -7,7 +7,11 @@ import {
 } from '@rasbur/shared';
 import { validate } from '../middleware/validate.js';
 import { usageLimitMiddleware } from '../middleware/usageLimit.js';
-import { authenticate, requirePermission } from '../middleware/authenticate.js';
+import {
+    authenticate,
+    optionalAuthenticate,
+    requirePermission,
+} from '../middleware/authenticate.js';
 import { apiKeyRateLimit } from '../middleware/apiKeyRateLimit.js';
 
 export const decodeRouter = Router();
@@ -79,7 +83,7 @@ decodeRouter.get('/decoders', (_req, res) => {
  */
 decodeRouter.post(
     '/decode',
-    authenticate,
+    optionalAuthenticate,
     apiKeyRateLimit,
     requirePermission('decode'),
     usageLimitMiddleware,
@@ -127,7 +131,7 @@ decodeRouter.post(
  */
 decodeRouter.post(
     '/identify',
-    authenticate,
+    optionalAuthenticate,
     apiKeyRateLimit,
     requirePermission('decode'),
     usageLimitMiddleware,

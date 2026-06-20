@@ -170,8 +170,18 @@ afterAll(async () => {
 });
 
 describe('WebSocket handlers', () => {
-    it('rejects socket connections without a token', async () => {
+    it('accepts anonymous socket connections without a token', async () => {
         const socket = connectSocket();
+
+        await waitForConnect(socket);
+
+        expect(socket.connected).toBe(true);
+
+        socket.disconnect();
+    });
+
+    it('rejects socket connections with an invalid token', async () => {
+        const socket = connectSocket('not-a-real-token');
 
         const error = await waitForConnectError(socket);
 
@@ -234,7 +244,11 @@ describe('WebSocket handlers', () => {
 
         await waitForConnect(socket);
 
-        const response = await emitWithAck<RoomAckResponse>(socket, 'room:join', 'user:test-user-1');
+        const response = await emitWithAck<RoomAckResponse>(
+            socket,
+            'room:join',
+            'user:test-user-1'
+        );
 
         expect(response).toEqual({
             ok: true,
