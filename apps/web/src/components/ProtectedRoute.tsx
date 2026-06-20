@@ -16,6 +16,9 @@ export default function ProtectedRoute() {
     }
 
     if (!isAuthenticated) {
+        // Stash the intended path so AuthCallbackPage can return here after the OAuth
+        // round-trip (React Router location state does not survive the external redirect).
+        localStorage.setItem('redirectAfterLogin', location.pathname + location.search);
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
     return <Outlet />;

@@ -21,7 +21,9 @@ export default function LoginPage() {
             const data = await res.json();
             if (data.ok && data.accessToken && data.refreshToken) {
                 saveAuthTokens(data.accessToken, data.refreshToken);
-                window.location.href = '/decode';
+                const redirectTo = localStorage.getItem('redirectAfterLogin');
+                localStorage.removeItem('redirectAfterLogin');
+                window.location.href = redirectTo || '/decode';
             }
         } catch (err) {
             console.error(err);

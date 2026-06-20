@@ -26,7 +26,6 @@ export default function App() {
                     <Route element={<AppLayout />}>
                         <Route path="/" element={<HomePage />} />
                         <Route path="/decode" element={<DecodePage />} />
-                        <Route path="/compare" element={<ComparePage />} />
                         <Route path="/docs" element={<ApiDocsPage />} />
                         <Route path="/s/:slug" element={<SharedResultPage />} />
                         <Route path="/about" element={<AboutPage />} />
@@ -35,6 +34,7 @@ export default function App() {
                         <Route path="/auth/callback" element={<AuthCallbackPage />} />
                         <Route path="/login" element={<LoginPage />} />
                         <Route element={<ProtectedRoute />}>
+                            <Route path="/compare" element={<ComparePage />} />
                             <Route path="/settings/profile" element={<ProfilePage />} />
                             <Route path="/history" element={<HistoryPage />} />
                             <Route

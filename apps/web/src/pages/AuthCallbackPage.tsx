@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function AuthCallbackPage() {
     const navigate = useNavigate();
@@ -8,18 +8,22 @@ export default function AuthCallbackPage() {
         // Get your tokens from the url
         const params = new URLSearchParams(window.location.search);
 
-        const accessToken = params.get("accessToken");
-        const refreshToken = params.get("refreshToken");
+        const accessToken = params.get('accessToken');
+        const refreshToken = params.get('refreshToken');
 
         if (!accessToken || !refreshToken) {
-            navigate("/login");
+            navigate('/login');
             return;
         }
 
-        localStorage.setItem("accessToken", accessToken);
-        localStorage.setItem("refreshToken", refreshToken);
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('refreshToken', refreshToken);
 
-        navigate("/decode");
+        // Return the user to the page that sent them to login, if any.
+        const redirectTo = localStorage.getItem('redirectAfterLogin');
+        localStorage.removeItem('redirectAfterLogin');
+
+        navigate(redirectTo || '/decode');
     }, [navigate]);
 
     return <p>Signing you in...</p>;
