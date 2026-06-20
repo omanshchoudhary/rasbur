@@ -54,13 +54,20 @@ export default function SharedResultPage() {
                 <AlertCircle size={40} className="text-red-500 mb-4 animate-pulse" />
                 <h1 className="text-xl font-bold text-white mb-2">Snapshot Unavailable</h1>
                 <p className="text-neutral-500 text-sm mb-6 leading-relaxed">
-                    {error || 'The requested decode history snapshot has expired or does not exist.'}
+                    {error ||
+                        'The requested decode history snapshot has expired or does not exist.'}
                 </p>
                 <div className="flex gap-4">
-                    <Link to="/decode" className="px-5 py-2.5 bg-white text-black text-xs font-bold rounded-lg hover:bg-neutral-200 transition-colors">
+                    <Link
+                        to="/decode"
+                        className="px-5 py-2.5 bg-white text-black! text-xs font-bold rounded-lg hover:bg-neutral-200 transition-colors"
+                    >
                         Open Workspace
                     </Link>
-                    <Link to="/" className="px-5 py-2.5 border border-white/10 text-white text-xs font-bold rounded-lg hover:bg-white/5 transition-colors">
+                    <Link
+                        to="/"
+                        className="px-5 py-2.5 border border-white/10 text-white text-xs font-bold rounded-lg hover:bg-white/5 transition-colors"
+                    >
                         Return Home
                     </Link>
                 </div>
@@ -81,9 +88,13 @@ export default function SharedResultPage() {
                         <div className="flex items-center gap-3 text-xs text-neutral-500 mt-2 flex-wrap">
                             <span>Shared on {new Date(createdAt).toLocaleDateString()}</span>
                             <span>•</span>
-                            <span>{viewCount} {viewCount === 1 ? 'view' : 'views'}</span>
+                            <span>
+                                {viewCount} {viewCount === 1 ? 'view' : 'views'}
+                            </span>
                             <span>•</span>
-                            <span className="text-amber-500/80">Expires {new Date(expiresAt).toLocaleDateString()}</span>
+                            <span className="text-amber-500/80">
+                                Expires {new Date(expiresAt).toLocaleDateString()}
+                            </span>
                         </div>
                     </div>
                     <button
@@ -102,7 +113,9 @@ export default function SharedResultPage() {
                 <div className="decode-panel glass-surface bg-neutral-950/40 border border-white/5 p-6 rounded-2xl">
                     <div className="panel-header mb-4">
                         <h2 className="text-lg font-bold text-white">Original Input</h2>
-                        <p className="panel-meta text-xs text-neutral-500 mt-1">Shared encoded payload</p>
+                        <p className="panel-meta text-xs text-neutral-500 mt-1">
+                            Shared encoded payload
+                        </p>
                     </div>
                     <pre className="w-full bg-neutral-900 border border-white/10 rounded-xl p-4 text-sm text-neutral-300 font-mono overflow-auto max-h-60 whitespace-pre-wrap break-all">
                         {historyId.originalInput}
@@ -113,7 +126,9 @@ export default function SharedResultPage() {
                 <div className="result-panel glass-surface bg-neutral-950/40 border border-white/5 p-6 rounded-2xl">
                     <div className="result-header mb-4">
                         <h2 className="text-lg font-bold text-white">Final Output</h2>
-                        <p className="steps-meta text-xs text-neutral-500 mt-1">Result of execution pipeline</p>
+                        <p className="steps-meta text-xs text-neutral-500 mt-1">
+                            Result of execution pipeline
+                        </p>
                     </div>
                     <pre className="w-full bg-neutral-900/60 border border-white/10 rounded-xl p-4 text-sm text-white font-mono overflow-auto max-h-60 whitespace-pre-wrap break-all">
                         {historyId.finalOutput}
@@ -126,7 +141,9 @@ export default function SharedResultPage() {
                 <section className="mt-8 glass-surface bg-neutral-950/40 border border-white/5 p-6 rounded-2xl relative z-10">
                     <div className="steps-header mb-6">
                         <h3 className="text-lg font-bold text-white">Pipeline Execution Steps</h3>
-                        <p className="steps-meta text-xs text-neutral-500 mt-1">Sequence of active decoder transformations applied</p>
+                        <p className="steps-meta text-xs text-neutral-500 mt-1">
+                            Sequence of active decoder transformations applied
+                        </p>
                     </div>
                     <DecodePipeline steps={historyId.steps} />
                 </section>

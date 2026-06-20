@@ -284,7 +284,7 @@ export default function HistoryPage() {
                         </div>
                         <Link
                             to="/decode"
-                            className="px-4 py-2 bg-white text-black text-xs font-bold rounded-lg hover:bg-neutral-200 transition-colors mt-2"
+                            className="px-4 py-2 bg-white text-black! text-xs font-bold rounded-lg hover:bg-neutral-200 transition-colors mt-2"
                         >
                             Go to Decoder Workspace
                         </Link>

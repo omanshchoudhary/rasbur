@@ -145,7 +145,7 @@ export default function ApiDocsPage() {
                         href={EXPLORER_URL}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="px-4 py-2 bg-white text-black rounded-lg text-sm font-bold transition-all duration-200 hover:bg-neutral-200 flex items-center gap-2"
+                        className="px-4 py-2 bg-white text-black! rounded-lg text-sm font-bold transition-all duration-200 hover:bg-neutral-200 flex items-center gap-2"
                     >
                         <Zap size={16} />
                         Open Interactive Explorer
