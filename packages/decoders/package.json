@@ -41,7 +41,7 @@
         "prepublishOnly": "npm run build"
     },
     "devDependencies": {
-        "@types/node": "^20.0.0",
+        "@types/node": "^20.19.43",
         "vitest": "^3.2.6"
     }
 }
