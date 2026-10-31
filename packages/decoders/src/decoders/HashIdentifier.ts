@@ -24,6 +24,14 @@ export class HashIdentifier extends Decoder {
         const len = cleanInput.length;
 
         if (HASH_TYPES[len]) {
+            const bitString = input.replace(/[\s,]/g, '');
+            if (/^[01]+$/.test(bitString) && bitString.length % 8 === 0) {
+                // Byte-aligned bits are ambiguous with hexadecimal hashes.
+                // Keep hash identification possible, but let a readable
+                // Binary decode win during automatic selection.
+                return 0.35;
+            }
+
             if (len === 32 || len === 64) return 0.95;
             return 0.9;
         }

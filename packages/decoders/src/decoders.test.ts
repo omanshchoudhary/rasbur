@@ -126,6 +126,21 @@ describe('DecodePipeline', () => {
         expect(result.steps[0]!.decoderName).toBe('Base64');
     });
 
+    it.each([
+        ['01001000 01101001', 'Hi'],
+        ['0100100001100101011011000110110001101111', 'Hello'],
+    ])('prefers readable binary over a hash-shaped bit string', (input, expected) => {
+        const result = decodePipeline.decode(input);
+        expect(result.steps[0]!.decoderName).toBe('Binary');
+        expect(result.finalOutput).toBe(expected);
+    });
+
+    it('still identifies a conventional MD5 hash', () => {
+        const result = decodePipeline.decode('5d41402abc4b2a76b9719d911017c592');
+        expect(result.steps[0]!.decoderName).toBe('Hash');
+        expect(result.finalOutput).toContain('MD5');
+    });
+
     it('returns the original input when nothing decodes', () => {
         const result = decodePipeline.decode('');
         expect(result.steps).toHaveLength(0);
