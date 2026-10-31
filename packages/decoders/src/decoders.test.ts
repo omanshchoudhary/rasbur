@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, vi } from 'vitest';
 import {
     Base64Decoder,
     HexDecoder,
@@ -260,6 +260,18 @@ describe('CaesarCipherDecoder', () => {
 
     it('claims shifted English with confidence', () => {
         expect(d.confidence('Khoor Zruog')).toBeGreaterThanOrEqual(0.65);
+    });
+
+    it('analyses the same input once across confidence() and decode()', () => {
+        const fresh = new CaesarCipherDecoder();
+        const spy = vi.spyOn(
+            fresh as unknown as { bestShift(input: string): unknown },
+            'bestShift'
+        );
+        expect(fresh.confidence('Khoor Zruog')).toBeGreaterThanOrEqual(0.65);
+        expect(fresh.decode('Khoor Zruog')).toContain('Hello World');
+        expect(spy).toHaveBeenCalledTimes(1);
+        spy.mockRestore();
     });
 
     it('leaves plain English alone', () => {

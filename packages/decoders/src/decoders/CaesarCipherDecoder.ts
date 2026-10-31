@@ -27,6 +27,12 @@ interface ShiftResult {
 export class CaesarCipherDecoder extends Decoder {
     readonly name = 'Caesar Cipher';
 
+    // The pipeline asks confidence() and decode() about the same input back to
+    // back, and analyze() tries all 25 shifts each time. Keep the last result
+    // so one layer is only analysed once.
+    private lastInput: string | null = null;
+    private lastResult: ShiftResult | null = null;
+
     confidence(input: string): number {
         const best = this.analyze(input);
         if (!best) return 0;
@@ -49,6 +55,15 @@ export class CaesarCipherDecoder extends Decoder {
 
     // Shared gatekeeper for confidence() and decode() so they always agree.
     private analyze(input: string): ShiftResult | null {
+        if (this.lastInput === input) return this.lastResult;
+
+        const result = this.analyzeUncached(input);
+        this.lastInput = input;
+        this.lastResult = result;
+        return result;
+    }
+
+    private analyzeUncached(input: string): ShiftResult | null {
         if (!input) return null;
         if (!/[a-zA-Z]/.test(input)) return null;
 
