@@ -7,6 +7,8 @@ import {
     ROT13Decoder,
     CaesarCipherDecoder,
     decodeRegistry,
+    DecodePipeline,
+    DecodeRegistry,
     registerDecoders,
     decodePipeline,
     plaintextScore,
@@ -124,6 +126,19 @@ describe('DecodePipeline', () => {
         expect(result.finalOutput).toBe('Hello World');
         expect(result.steps.length).toBeGreaterThanOrEqual(1);
         expect(result.steps[0]!.decoderName).toBe('Base64');
+    });
+
+    it('uses an isolated registry without changing the default registry', () => {
+        const registry = new DecodeRegistry();
+        registry.register(new HexDecoder());
+        const pipeline = new DecodePipeline(registry);
+        const base64 = 'SGVsbG8gV29ybGQ=';
+
+        expect(pipeline.decode('48656c6c6f').finalOutput).toBe('Hello');
+        expect(pipeline.decode(base64).finalOutput).toBe(base64);
+        expect(pipeline.decode(base64, { forceDecoder: 'Base64' }).steps).toEqual([]);
+        expect(pipeline.identify(base64).matches).toEqual([]);
+        expect(decodePipeline.decode(base64).finalOutput).toBe('Hello World');
     });
 
     it('returns the original input when nothing decodes', () => {

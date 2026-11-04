@@ -1,6 +1,7 @@
 import { Decoder } from '../base/Decoder.js';
 import type { DecodeResult, DecodeStep, DecodeOptions, IdentifyResult } from '../types.js';
 import { decodeRegistry } from '../registry/decodeRegistry.js';
+import type { DecodeRegistry } from '../registry/decodeRegistry.js';
 import { plaintextScore } from '../utils/textScore.js';
 
 const STRICT_MODE_THRESHOLD = 0.7;
@@ -17,6 +18,8 @@ interface StepCandidate {
 
 export class DecodePipeline {
     private maxDepth = 5;
+
+    constructor(private readonly registry: DecodeRegistry = decodeRegistry) {}
 
     decode(input: string, options: DecodeOptions = {}): DecodeResult {
         const steps: DecodeStep[] = [];
@@ -61,7 +64,7 @@ export class DecodePipeline {
     // The user explicitly chose this decoder, so the output-quality gate is
     // skipped. Show them exactly what their decoder produces.
     private runForcedDecoder(input: string, name: string): StepCandidate | null {
-        const decoder = decodeRegistry.getByName(name);
+        const decoder = this.registry.getByName(name);
         if (!decoder) return null;
 
         const output = decoder.decode(input);
@@ -74,7 +77,7 @@ export class DecodePipeline {
     // inputShape * outputQuality, so a decoder that LOOKS right but produces
     // garbage loses to one that produces real text.
     private findBestCandidate(input: string, seen: Set<string>): StepCandidate | null {
-        const candidates = decodeRegistry
+        const candidates = this.registry
             .getAll()
             .map((decoder) => ({ decoder, shape: decoder.confidence(input) }))
             .filter((candidate) => candidate.shape > 0)
@@ -99,7 +102,7 @@ export class DecodePipeline {
     }
 
     identify(input: string): IdentifyResult {
-        const matches = decodeRegistry
+        const matches = this.registry
             .getAll()
             .map((decoder) => {
                 const shape = decoder.confidence(input);
