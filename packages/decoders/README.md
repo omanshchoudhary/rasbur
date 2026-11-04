@@ -67,6 +67,20 @@ decodePipeline.decode(input, {
 
 A single call is also capped at two seconds of wall-clock time.
 
+### Isolating decoders
+
+Pass a `DecodeRegistry` to create a pipeline that only uses the decoders registered in that instance. Pipelines without an argument continue to use the shared registry.
+
+```ts
+import { DecodePipeline, DecodeRegistry, HexDecoder } from '@rasbur/decoders';
+
+const registry = new DecodeRegistry();
+registry.register(new HexDecoder());
+const pipeline = new DecodePipeline(registry);
+
+pipeline.decode('48656c6c6f').finalOutput; // 'Hello'
+```
+
 ## Writing your own decoder
 
 Extend `Decoder` and register it. It then takes part in detection like any built-in.
