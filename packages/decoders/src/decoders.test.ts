@@ -306,6 +306,14 @@ describe('CaesarCipherDecoder', () => {
     it('rejects gibberish where no shift helps', () => {
         expect(d.confidence('qzkx vbnm jqzx')).toBe(0);
     });
+
+    it('rejects Atbash text that shifts to common-letter soup (issue #20)', () => {
+        // Every frequency gate passes here: shift 23 yields
+        // "Pslli Aiflt, dpoe oe w dsed" with englishLikeness 1.0, so only the
+        // onset check can tell that none of those are words.
+        expect(d.confidence('Svool Dliow, gsrh rh z gvhg')).toBe(0);
+        expect(d.decode('Svool Dliow, gsrh rh z gvhg')).toBeNull();
+    });
 });
 
 describe('HexDecoder 0x handling', () => {

@@ -17,6 +17,67 @@ const IMPROVEMENT_FACTOR = 1.3;
 const MAX_CHI = 3.5;
 // Real English keeps j/q/x/z under ~2% of letters
 const MAX_RARE_RATIO = 0.05;
+// Onsets English actually uses beyond a single consonant. Rotated letter soup
+// passes every frequency gate above (the Atbash example in issue #20 scores
+// englishLikeness 1.0) because common letters in non-words still outnumber
+// rare ones, but it forms clusters no English word begins with: "dp", "ds",
+// "psll". Both 2- and 3-letter onsets live here; 4+ letter onsets ("schm" is
+// the only English one and starts a Yiddish loanword) are rejected outright.
+const LEGAL_ONSETS = new Set([
+    'bl',
+    'br',
+    'ch',
+    'cl',
+    'cr',
+    'dj',
+    'dr',
+    'dw',
+    'fl',
+    'fj',
+    'fr',
+    'gh',
+    'gl',
+    'gn',
+    'gr',
+    'kh',
+    'kn',
+    'mn',
+    'ph',
+    'pl',
+    'pn',
+    'pr',
+    'ps',
+    'pt',
+    'rh',
+    'sc',
+    'sh',
+    'sk',
+    'sl',
+    'sm',
+    'sn',
+    'sp',
+    'sq',
+    'st',
+    'sw',
+    'th',
+    'tr',
+    'ts',
+    'tw',
+    'wh',
+    'wr',
+    'chr',
+    'phl',
+    'phr',
+    'sch',
+    'scr',
+    'shr',
+    'spl',
+    'spr',
+    'sph',
+    'str',
+    'thw',
+    'thr',
+]);
 
 interface ShiftResult {
     shift: number;
@@ -83,8 +144,26 @@ export class CaesarCipherDecoder extends Decoder {
         if (englishLikeness(best.text) < 0.7) return null;
         // Real words have real letter pairs, rotated soup does not
         if (bigramCommonRatio(best.text) < 0.25) return null;
+        // Frequency and bigram stats cannot tell letter soup from words when
+        // the soup happens to use common letters (issue #20: the Atbash string
+        // shifts to "Pslli Aiflt, dpoe oe w dsed" and scores englishLikeness
+        // 1.0). Word onsets can: no English word begins "dp", "ds" or "psll".
+        if (!this.wordsHaveEnglishOnsets(best.text)) return null;
 
         return best;
+    }
+
+    // Every word of the decoded text must start with a vowel, a single
+    // consonant, or an onset English actually uses (LEGAL_ONSETS).
+    private wordsHaveEnglishOnsets(text: string): boolean {
+        const words = text.toLowerCase().match(/[a-z]+/g) || [];
+        if (words.length === 0) return false;
+
+        return words.every((word) => {
+            const onset = (word.match(/^[^aeiou]+/) ?? [''])[0];
+            if (onset.length <= 1) return true;
+            return LEGAL_ONSETS.has(onset);
+        });
     }
 
     private shift(input: string, shift: number): string {
