@@ -1,6 +1,6 @@
 import { Decoder } from '../base/Decoder.js';
 
-class DecodeRegistry {
+export class DecodeRegistry {
     private decoders: Decoder[] = [];
     register(decoder: Decoder): void {
         this.decoders.push(decoder);
