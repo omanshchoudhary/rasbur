@@ -98,7 +98,7 @@ returns the decoded string, or `null` if it cannot.
 
 ## Built-in decoders
 
-Base64 (including base64url), Base32, Base58, Base85, Hex, Binary, URL, ASCII, Morse
+Base64 (including base64url), Base32, Base58, Base85, Hex, Binary, Octal, URL, ASCII, Morse
 Code, ROT13, Caesar Cipher, JWT, Unicode Escape, HTML Entity, Punycode,
 Quoted-Printable, JSON Stringify, and a hash identifier for MD5, SHA-1, SHA-256 and
 SHA-512.

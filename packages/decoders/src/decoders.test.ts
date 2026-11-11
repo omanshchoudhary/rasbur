@@ -3,6 +3,7 @@ import {
     Base64Decoder,
     HexDecoder,
     BinaryDecoder,
+    OctalDecoder,
     UrlDecoder,
     ROT13Decoder,
     CaesarCipherDecoder,
@@ -68,6 +69,24 @@ describe('BinaryDecoder', () => {
     });
 });
 
+describe('OctalDecoder', () => {
+    const d = new OctalDecoder();
+    const encoded = '110 145 154 154 157 040 127 157 162 154 144';
+
+    it('decodes space-separated octal ASCII bytes', () => {
+        expect(d.decode(encoded)).toBe('Hello World');
+    });
+
+    it('recognizes octal byte groups', () => {
+        expect(d.confidence(encoded)).toBeGreaterThan(0);
+    });
+
+    it('rejects values outside printable ASCII bytes', () => {
+        expect(d.confidence('400 400')).toBe(0);
+        expect(d.decode('400 400')).toBeNull();
+    });
+});
+
 describe('UrlDecoder', () => {
     const d = new UrlDecoder();
 
@@ -99,9 +118,9 @@ describe('ROT13Decoder', () => {
 describe('decodeRegistry + registerDecoders', () => {
     beforeAll(() => registerDecoders());
 
-    it('registers all 18 decoders (idempotently)', () => {
+    it('registers all 19 decoders (idempotently)', () => {
         registerDecoders(); // second call should be a no-op
-        expect(decodeRegistry.getAll()).toHaveLength(18);
+        expect(decodeRegistry.getAll()).toHaveLength(19);
     });
 
     it('looks up a decoder by name', () => {
@@ -133,6 +152,16 @@ describe('DecodePipeline', () => {
         const result = decodePipeline.decode(input);
         expect(result.steps[0]!.decoderName).toBe('Binary');
         expect(result.finalOutput).toBe(expected);
+    });
+
+    it('auto-detects octal bytes without treating decimal ASCII as octal', () => {
+        const octal = decodePipeline.decode('110 145 154 154 157 040 127 157 162 154 144');
+        expect(octal.steps[0]!.decoderName).toBe('Octal');
+        expect(octal.finalOutput).toBe('Hello World');
+
+        const decimal = decodePipeline.decode('065 066 067');
+        expect(decimal.steps[0]!.decoderName).toBe('ASCII');
+        expect(decimal.finalOutput).toBe('ABC');
     });
 
     it('still identifies a conventional MD5 hash', () => {

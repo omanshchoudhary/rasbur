@@ -64,7 +64,7 @@ and `list_decoders`. Runs locally, no API key, no network calls. See the
 
 ## Supported encodings
 
-Base64 (including base64url), Base32, Base58, Base85, Hex, Binary, URL, ASCII, Morse
+Base64 (including base64url), Base32, Base58, Base85, Hex, Binary, Octal, URL, ASCII, Morse
 Code, ROT13, Caesar Cipher, JWT, Unicode Escape, HTML Entity, Punycode,
 Quoted-Printable, JSON Stringify, and hash identification for MD5, SHA-1, SHA-256,
 SHA-512 and others.

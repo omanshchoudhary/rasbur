@@ -7,6 +7,7 @@ export * from './decoders/Base64Decoder.js';
 export * from './decoders/UrlDecoder.js';
 export * from './decoders/HexDecoder.js';
 export * from './decoders/BinaryDecoder.js';
+export * from './decoders/OctalDecoder.js';
 export * from './decoders/ROT13Decoder.js';
 export * from './decoders/AsciiDecoder.js';
 export * from './decoders/MorseDecoder.js';

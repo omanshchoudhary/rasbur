@@ -11,6 +11,7 @@ import { HtmlEntityDecoder } from './decoders/HtmlEntityDecoder.js';
 import { JsonStringifyDecoder } from './decoders/JsonStringifyDecoder.js';
 import { JWTDecoder } from './decoders/JWTDecoder.js';
 import { MorseDecoder } from './decoders/MorseDecoder.js';
+import { OctalDecoder } from './decoders/OctalDecoder.js';
 import { PunycodeDecoder } from './decoders/PunycodeDecoder.js';
 import { QuotedPrintableDecoder } from './decoders/QuotedPrintableDecoder.js';
 import { ROT13Decoder } from './decoders/ROT13Decoder.js';
@@ -27,6 +28,7 @@ export const registerDecoders = (): void => {
     decodeRegistry.register(new UrlDecoder());
     decodeRegistry.register(new HexDecoder());
     decodeRegistry.register(new BinaryDecoder());
+    decodeRegistry.register(new OctalDecoder());
     decodeRegistry.register(new ROT13Decoder());
     decodeRegistry.register(new AsciiDecoder());
     decodeRegistry.register(new MorseDecoder());
@@ -42,5 +44,5 @@ export const registerDecoders = (): void => {
     decodeRegistry.register(new QuotedPrintableDecoder());
     decodeRegistry.register(new JsonStringifyDecoder());
 
-    isRegistered=true;
+    isRegistered = true;
 };
