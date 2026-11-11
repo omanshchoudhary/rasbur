@@ -5,9 +5,7 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "check-types": "turbo run check-types",
     "test": "turbo run test",
     "prepare": "node -e \"if (process.env.NODE_ENV !== 'production') { try { require('child_process').execSync('husky') } catch (e) {} }\""
   },
