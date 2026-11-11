@@ -5,6 +5,7 @@ import {
     BinaryDecoder,
     UrlDecoder,
     ROT13Decoder,
+    ROT47Decoder,
     CaesarCipherDecoder,
     decodeRegistry,
     registerDecoders,
@@ -96,17 +97,56 @@ describe('ROT13Decoder', () => {
     });
 });
 
+describe('ROT47Decoder', () => {
+    const d = new ROT47Decoder();
+
+    it('decodes the reported printable-ASCII sample', () => {
+        const encoded = 'w6==@ (@C=5[ E9:D :D 2 E6DE';
+
+        expect(d.decode(encoded)).toBe('Hello World, this is a test');
+        expect(d.confidence(encoded)).toBeGreaterThan(0);
+    });
+
+    it('does not claim plain English as ROT47', () => {
+        expect(d.confidence('Hello World, this is a test')).toBe(0);
+    });
+
+    it('does not claim hexadecimal input as ROT47', () => {
+        expect(d.confidence('48656c6c6f20526173627572')).toBe(0);
+    });
+
+    it('returns null for input outside printable ASCII', () => {
+        expect(d.decode('encoded\ntext')).toBeNull();
+    });
+});
+
 describe('decodeRegistry + registerDecoders', () => {
     beforeAll(() => registerDecoders());
 
-    it('registers all 18 decoders (idempotently)', () => {
+    it('registers all 19 decoders (idempotently)', () => {
         registerDecoders(); // second call should be a no-op
-        expect(decodeRegistry.getAll()).toHaveLength(18);
+        expect(decodeRegistry.getAll()).toHaveLength(19);
     });
 
     it('looks up a decoder by name', () => {
         expect(decodeRegistry.getByName('Base64')).toBeDefined();
+        expect(decodeRegistry.getByName('ROT47')).toBeDefined();
         expect(decodeRegistry.getByName('Nonexistent')).toBeUndefined();
+    });
+
+    it('auto-detects and decodes the reported ROT47 sample', () => {
+        const result = decodePipeline.decode('w6==@ (@C=5[ E9:D :D 2 E6DE');
+
+        expect(result.steps[0]!.decoderName).toBe('ROT47');
+        expect(result.finalOutput).toBe('Hello World, this is a test');
+    });
+
+    it('does not identify plain English text as ROT47', () => {
+        const names = decodePipeline
+            .identify('Hello World, this is a test')
+            .matches.map((match) => match.name);
+
+        expect(names).not.toContain('ROT47');
     });
 
     it('every decoder exposes a non-empty explanation', () => {

@@ -14,6 +14,7 @@ import { MorseDecoder } from './decoders/MorseDecoder.js';
 import { PunycodeDecoder } from './decoders/PunycodeDecoder.js';
 import { QuotedPrintableDecoder } from './decoders/QuotedPrintableDecoder.js';
 import { ROT13Decoder } from './decoders/ROT13Decoder.js';
+import { ROT47Decoder } from './decoders/ROT47Decoder.js';
 import { UnicodeEscapeDecoder } from './decoders/UnicodeEscapeDecoder.js';
 import { UrlDecoder } from './decoders/UrlDecoder.js';
 import { decodeRegistry } from './registry/decodeRegistry.js';
@@ -28,6 +29,7 @@ export const registerDecoders = (): void => {
     decodeRegistry.register(new HexDecoder());
     decodeRegistry.register(new BinaryDecoder());
     decodeRegistry.register(new ROT13Decoder());
+    decodeRegistry.register(new ROT47Decoder());
     decodeRegistry.register(new AsciiDecoder());
     decodeRegistry.register(new MorseDecoder());
     decodeRegistry.register(new Base32Decoder());
@@ -42,5 +44,5 @@ export const registerDecoders = (): void => {
     decodeRegistry.register(new QuotedPrintableDecoder());
     decodeRegistry.register(new JsonStringifyDecoder());
 
-    isRegistered=true;
+    isRegistered = true;
 };
