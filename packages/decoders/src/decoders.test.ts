@@ -10,6 +10,7 @@ import {
     registerDecoders,
     decodePipeline,
     plaintextScore,
+    HashIdentifier,
 } from './index.js';
 import { decodeBase64, bytesToUtf8, decodeBase64Text } from './utils/base64.js';
 
@@ -190,6 +191,21 @@ describe('DecodePipeline', () => {
             expect(decodePipeline.identify(text).matches).toEqual([]);
         }
     );
+});
+
+describe('HashIdentifier grouping', () => {
+    const d = new HashIdentifier();
+
+    it('rejects two unrelated whitespace-separated hex words', () => {
+        expect(d.confidence('deadbeef cafebabe')).toBe(0);
+        expect(d.decode('deadbeef cafebabe')).toBeNull();
+    });
+
+    it('keeps consistently grouped hash output recognizable', () => {
+        const input = '5d41402a bc4b2a76 b9719d91 1017c592';
+        expect(d.confidence(input)).toBeGreaterThan(0);
+        expect(d.decode(input)).toContain('MD5');
+    });
 });
 
 describe('plaintextScore control characters', () => {

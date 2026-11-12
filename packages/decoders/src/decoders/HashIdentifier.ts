@@ -11,15 +11,26 @@ const HASH_TYPES: Record<number, string> = {
     128: 'SHA-512',
 };
 
+function normalizeHashInput(input: string): string | null {
+    const groups = input.trim().split(/\s+/);
+    if (groups.length > 1) {
+        const groupLength = groups[0]?.length;
+        // Fewer than four groups are too ambiguous to distinguish a wrapped hash from unrelated hex words.
+        if (groups.length < 4 || groups.some((group) => group.length !== groupLength)) return null;
+    }
+
+    const cleanInput = input.replace(/[\s\-:]/g, '');
+    return /^[a-fA-F0-9]+$/.test(cleanInput) ? cleanInput : null;
+}
+
 export class HashIdentifier extends Decoder {
     readonly name = 'Hash';
 
     confidence(input: string): number {
         if (!input) return 0;
 
-        const cleanInput = input.replace(/[\s\-:]/g, '');
-
-        if (!/^[a-fA-F0-9]+$/.test(cleanInput)) return 0;
+        const cleanInput = normalizeHashInput(input);
+        if (!cleanInput) return 0;
 
         const len = cleanInput.length;
 
@@ -41,7 +52,8 @@ export class HashIdentifier extends Decoder {
 
     decode(input: string): string | null {
         try {
-            const cleanInput = input.replace(/[\s\-:]/g, '');
+            const cleanInput = normalizeHashInput(input);
+            if (!cleanInput) return null;
             const len = cleanInput.length;
 
             const hashType = HASH_TYPES[len];
