@@ -127,6 +127,19 @@ describe('DecodePipeline', () => {
     });
 
     it.each([
+        ['Japanese', '5pel5pys6Kqe44Gu44OG44Kt44K544OI44Gn44GZ', '日本語のテキストです'],
+        ['Cyrillic', Buffer.from('Привет, мир!', 'utf8').toString('base64'), 'Привет, мир!'],
+    ])('auto-detects Base64 containing %s text', (_script, input, expected) => {
+        const result = decodePipeline.decode(input);
+
+        expect(result.finalOutput).toBe(expected);
+        expect(result.steps.map((step) => step.decoderName)).toEqual(['Base64']);
+        expect(decodePipeline.identify(input).matches.map((match) => match.name)).toContain(
+            'Base64'
+        );
+    });
+
+    it.each([
         ['01001000 01101001', 'Hi'],
         ['0100100001100101011011000110110001101111', 'Hello'],
     ])('prefers readable binary over a hash-shaped bit string', (input, expected) => {

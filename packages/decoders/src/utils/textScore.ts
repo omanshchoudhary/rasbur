@@ -106,6 +106,9 @@ const COMMON_BIGRAMS = new Set([
     'ut',
 ]);
 
+const UNICODE_LETTER_REGEX = /\p{L}/u;
+const LATIN_SCRIPT_REGEX = /\p{Script=Latin}/u;
+
 export function printableRatio(text: string): number {
     if (!text) return 0;
 
@@ -128,6 +131,22 @@ function asciiRatio(text: string): number {
         }
     }
     return ascii / chars.length;
+}
+
+function nonLatinLetterRatio(text: string): number {
+    const chars = [...text];
+    let letters = 0;
+    let nonLatinLetters = 0;
+
+    for (const char of chars) {
+        if (!UNICODE_LETTER_REGEX.test(char)) continue;
+
+        letters++;
+        if (!LATIN_SCRIPT_REGEX.test(char)) nonLatinLetters++;
+    }
+
+    if (letters < 3 || nonLatinLetters / letters < 0.6) return 0;
+    return nonLatinLetters / chars.length;
 }
 
 // Share of a string's letters that belong to the high-frequency English set.
@@ -179,9 +198,8 @@ export function englishLikeness(text: string): number {
 }
 
 // 0..1 score for "does this look like real decoded data?"
-// Control/replacement chars are a hard gate; ASCII share and English-letter
-// distribution are soft signals. Non-English unicode prose scores low, an
-// accepted tradeoff, since decode targets here are overwhelmingly ASCII.
+// Control/replacement chars are a hard gate; ASCII and English-letter
+// distribution score Latin text, while dense non-Latin text uses script share.
 export function plaintextScore(text: string): number {
     if (!text) return 0;
 
@@ -193,7 +211,12 @@ export function plaintextScore(text: string): number {
     // control characters and so clear the gate above. A low ASCII share is the real
     // tell for that mojibake, so gate on it too.
     const ascii = asciiRatio(text);
-    if (ascii < 0.6) return ascii * 0.1;
+    if (ascii < 0.6) {
+        // shortcut: script share is not language detection; upgrade if valid UTF-8 garbage passes.
+        const nonLatin = nonLatinLetterRatio(text);
+        if (nonLatin > 0) return Math.min(0.9, nonLatin);
+        return ascii * 0.1;
+    }
 
     return 0.55 * ascii + 0.45 * englishLikeness(text);
 }
